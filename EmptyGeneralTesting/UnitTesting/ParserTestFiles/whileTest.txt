@@ -1,0 +1,8 @@
+\\ While loop parsing
+
+procedure whileTest {
+	while z {
+		x = 2;
+		y = y + 1;
+	}
+}

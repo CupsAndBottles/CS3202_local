@@ -1,0 +1,11 @@
+procedure assignmentStmts {
+	x = y + z;								\\ 1
+	y = z + 1;								\\ 2
+	z = 2 + 3;								\\ 3
+	a = x + 2 + y;							\\ 4
+	tEst = tEst + 1;						\\ 5
+	x = x + x;								\\ 6
+	var = 1 + 2;							\\ 7
+	bLaH = 2;								\\ 8
+	lastOne = 1 + 2 + 3 + x + 2 + y + z;	\\ 9
+}

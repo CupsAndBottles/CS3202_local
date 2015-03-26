@@ -1,0 +1,165 @@
+1 - Get All Assignment Stmts
+assign a;
+Select a
+1, 2, 3, 4, 5, 6, 7, 8, 9
+5000
+2 - Get All While Stmts
+while w;
+Select w
+none
+5000
+3 - Modifies x
+stmt s;
+Select s such that Modifies (s, "x")
+1, 6
+5000
+4 - Modifies y
+stmt s;
+Select s such that Modifies (s, "y")
+2
+5000
+5 - Modifies z
+stmt s;
+Select s such that Modifies (s, "z")
+3
+5000
+6 - Uses x
+stmt s;
+Select s such that Uses (s, "x")
+4, 6, 9
+5000
+7 - Uses tEst
+stmt s;
+Select s such that Uses (s, "tEst")
+5
+5000
+8 - Uses y
+stmt s;
+Select s such that Uses (s, "y")
+1, 4, 9
+5000
+9 - Follows before
+stmt s;
+Select s such that Follows (s, _)
+1, 2, 3, 4, 5, 6, 7, 8
+5000
+10 - Follows after
+stmt s;
+Select s such that Follows (_, s)
+2, 3, 4, 5, 6, 7, 8, 9
+5000
+11 - Follows before 6
+stmt s;
+Select s such that Follows (s, 6)
+5
+5000
+12 - Follows* before 9
+assign a;
+Select a such that Follows (a, 9)
+8
+5000
+13 - Follows* after 6
+assign a;
+Select a such that Follows* (6, a)
+7, 8, 9
+5000
+14 - Follows*
+assign a;
+Select a such that Follows (_, a)
+2, 3, 4, 5, 6, 7, 8, 9
+5000
+15 - Parents
+stmt s;
+Select s such that Parent (s, _)
+none
+5000
+16 - Parented
+stmt s;
+Select s such that Parent (_, s)
+none
+5000
+17 - Parent of 3
+stmt s;
+Select s such that Parent (s, 3)
+none
+5000
+17 - Parents*
+stmt s;
+Select s such that Parent* (s, _)
+none
+5000
+17 - Parented*
+stmt s;
+Select s such that Parent (_, s)
+none
+5000
+17 - Parent* of 5
+stmt s;
+Select s such that Parent (s, 5)
+none
+5000
+18 - LHS Pattern
+assign a;
+Select a pattern a ("x", _)
+1, 6
+5000
+19 - RHS Patterns
+assign a;
+Select a pattern a (_, _"1"_)
+2, 5, 7, 9
+5000
+20 - RHS Compound Patterns
+assign a;
+Select a pattern a (_, _"1 + 2"_)
+7, 9
+5000
+21 - Compound Patterns
+assign a;
+Select a pattern a ("y", _"1"_)
+2
+5000
+22 - More Compound Patterns
+assign a;
+Select a pattern a ("lastOne", _"1 + 2"_)
+9
+5000
+23 - Modifies lastOne with Pattern
+assign a;
+Select a such that Modifies (a, "lastOne") pattern a (_, _"1 + 2"_)
+9
+5000
+24 - Modifies x with Pattern
+assign a;
+Select a such that Modifies (a, "x") pattern a ("y", _"1 + 2"_)
+none
+5000
+25 - Modifies z with Pattern
+assign a;
+Select a such that Modifies (a, "z") pattern a (_, _)
+3
+5000
+26 - Uses x with Pattern
+assign a;
+Select a such that Uses (a, "x") pattern a (_, _"1 + 2"_)
+9
+5000
+27 - Uses z with Pattern
+assign a;
+Select a such that Uses (a, "z") pattern a ("y", _)
+2
+5000
+28 - Uses y with Pattern
+assign a;
+Select a such that Uses (a, "y") pattern a (_, _)
+1, 4, 9
+5000
+29 - Follows 1 with Pattern
+assign a;
+Select a such that Follows (1, a) pattern a ("x", _"x"_)
+none
+5000
+30 - Follows* 3 with Pattern
+assign a;
+Select a such that Follows* (3, a) pattern a (_, _"x"_)
+4, 6, 9
+5000

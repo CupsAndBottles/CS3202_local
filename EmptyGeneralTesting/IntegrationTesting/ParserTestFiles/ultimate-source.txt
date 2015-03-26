@@ -1,0 +1,41 @@
+procedure test {
+	x = 1;						\\ 1
+	y = x + 1;					\\ 2
+	b = a + c;					\\ 3
+	c = 4;						\\ 4
+	z = c + 10;					\\ 5
+
+	while z {					\\ 6
+		tEst = z + x + 1;			\\ 7
+		newVar = 5;				\\ 8
+
+		while x {				\\ 9
+			y = newVar + tEst;		\\ 10
+
+			while newVar {			\\ 11
+				tEst = a + x;		\\ 12
+				newVar = newVar + 1;	\\ 13
+				a = z + 8;		\\ 14
+			}
+		}
+
+		while tEst {				\\ 15
+			tEst = 0;			\\ 16
+			d = z + x;			\\ 17
+		}
+		a = b + 2 + c;	 			\\ 18
+		z = a + c + 1;				\\ 19
+		tEst = x + 1 + 2;			\\ 20
+		
+		while a {				\\ 21
+			b = z + c + 10;			\\ 22
+			newVar = b + a + c;		\\ 23
+
+			while d {			\\ 24
+				a = z + 8 + c;		\\ 25
+				b = 0;			\\ 26
+				c = s + a + c;		\\ 27
+			}
+		}
+	}
+}

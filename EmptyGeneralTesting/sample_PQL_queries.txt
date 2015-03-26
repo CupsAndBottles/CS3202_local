@@ -1,0 +1,10 @@
+1 - comment
+assign a;
+Select a
+1, 2, 3, 6, 8, 10, 13, 14, 15, 17, 18, 19, 20
+5000
+2 - comment
+while w;
+Select w
+4, 5, 7, 9, 11, 16
+5000

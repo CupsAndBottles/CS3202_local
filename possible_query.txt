@@ -1,0 +1,92 @@
+stmt s;
+Select s such that Modifies(s, "x")
+
+stmt s;
+Select s such that Modifies(s, "_")
+
+stmt s;
+Select s such that Modifies(s, "a#6508#");
+
+assign a;
+Select a such that Modifies(a, "x")
+
+assign a;
+Select a such that Modifies(a, _)
+
+assign a;
+Select a such that Modifies(a, "str4ng3R#")
+
+stmt s; assign a;
+Select s such that Modifies(a, "x")
+
+stmt s; assign a;
+Select s such that Modifies(s, "x")
+
+stmt s; assign a;
+Select a such that Modifies(s, "x")
+
+stmt s1, s2;
+Select s1 such that Modifies(s2, "x")
+
+while w;
+Select w such that Uses(w, "x");
+
+variable v; while w;
+Select w such that Uses(w, v);
+
+variable v; while v;
+Select v such that Uses(v, v);
+
+stmt s;
+Select s such that Uses(s, "x");
+
+variable v; stmt s;
+Select v such that Uses(s, v);
+
+stmt s1, s2;
+Select s1 such that Parent(s1, s2);
+
+stmt s1, s2;
+Select s2 such that Parent*(s1, s2);
+
+stmt s; assign a;
+Select s such that Parent(s, a);
+
+stmt s; while w;
+Select s such that Parent*(w, s);
+
+stmt s1, s2;
+Select s1 such that Follows(s1, s2);
+
+stmt s1, s2;
+Select s2 such that Follows(s1, s2);
+
+stmt s;
+Select s such that Follows*(1, s);
+
+stmt s;
+Select s such that Follows*(s, 10);
+
+stmt s;
+Select s such that Follows(s, _);
+
+stmt s; variable v; assign a;
+Select s such that Parent*(s, a) pattern a(v, _);
+
+assign a;
+Select a pattern a("a", "b+c");
+
+assign a;
+Select a pattern a(_, _);
+
+assign a; stmt s;
+Select a such that Follows(a, s) pattern a("x", _"y+z"_)
+
+assign a1; variable v;
+Select a1 such that Modifies(a1, v) pattern a1("x", _"x"_)
+
+assign a1, a2;
+Select a1 such that Uses(a2, "x") pattern a2(_, _);
+
+assign a; while w;
+Select w such that Parent(w, a) pattern a(_,_"x+y"_)

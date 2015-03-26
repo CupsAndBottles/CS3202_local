@@ -1,0 +1,14 @@
+procedure test {
+	x = 1;						\\ 1
+	y = x + 1;					\\ 2
+	while z {					\\ 3
+		tEst = z + x + 1;		\\ 4
+		while x {				\\ 5
+			y = newVar + tEst;	\\ 6
+		}
+		while tEst {			\\ 7
+			tEst = 0;			\\ 8
+		}
+		a = b + 2 + c;			\\ 9
+	}
+}

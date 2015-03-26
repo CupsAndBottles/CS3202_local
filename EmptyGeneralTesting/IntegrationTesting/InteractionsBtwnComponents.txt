@@ -1,0 +1,17 @@
+SPAFrontEnd --> PKB
+- Parser --> Tokenizer
+  . get the right tokens (? how to check?)
+- Parser --> AST
+  . Parse(string source): Get tokens from Tokenizer
+  . Parse(): create AST root node, create children of stmtlst for root node
+  . proc node --> AST
+	.. 1 proc only
+  . parseStmt --> AST
+	.. while, assign stmts only
+  . parseExpr --> AST
+	.. + only, no "(", no ")"
+	.. var_name and const_value
+
+QueryEvaluator --> PKB
+- checkModifies
+- checkUses

@@ -1,0 +1,8 @@
+\\ Normal Assignment Parsing for addition
+
+procedure additionTest {
+	x = y + z;
+	y = z + 1;
+	z = 2 + 3;
+	a = x + 2 + y;
+}

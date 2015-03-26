@@ -1,0 +1,37 @@
+CS3201
+declaration in 1 line
+assign a;while 2;
+
+query structure
+Select __ such that __ pattern __
+Select __ pattern __ such that __
+
+Select
+-no <tuple>
+-no BOOLEAN
+
+Modifies, Uses, Parents, Parents*, Follows, Follows*
+
+pattern
+only assign, a(_,_)
+
+
+CS3202
+Assignment 1
+Calls, Calls*
+with-clause
+procedure p in argument
+result inlcude boolean
+select boolean such that calls*("procedure1",p) pattern a(_,_) with p = "proc
+
+
+Assignment 2
+Next, Next*
+pattern if and while
+multiple such that, with and pattern clauses
+Select boolean such that Next(2,a) and Next*(a,10) pattern if(if,_) and pattern while(w,_,_) with ...
+
+
+Assignment 3
+Affects, Affects*
+tuple result

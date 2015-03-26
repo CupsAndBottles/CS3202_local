@@ -1,0 +1,11 @@
+\\ Nested while parsing
+
+procedure nestedWhileParsing {
+	while x {
+		while y {
+			while z {
+				x = 0;
+			}
+		}
+	}
+}

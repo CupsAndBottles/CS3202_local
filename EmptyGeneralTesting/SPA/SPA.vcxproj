@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Parser\DesignExtractor.h" />
+    <ClInclude Include="PKB\Next.h" />
+    <ClInclude Include="PKB\Calls.h" />
+    <ClInclude Include="Exception\IndexNotFoundException.h" />
+    <ClInclude Include="Parser\Parser.h" />
+    <ClInclude Include="Parser\Token.h" />
+    <ClInclude Include="Parser\Tokenizer.h" />
+    <ClInclude Include="PKB\ConstTable.h" />
+    <ClInclude Include="PKB\Follows.h" />
+    <ClInclude Include="PKB\Modifies.h" />
+    <ClInclude Include="PKB\Parent.h" />
+    <ClInclude Include="PKB\ProcTable.h" />
+    <ClInclude Include="PKB\StmtTypeTable.h" />
+    <ClInclude Include="PKB\Uses.h" />
+    <ClInclude Include="PKB\VarTable.h" />
+    <ClInclude Include="Program\Program.h" />
+    <ClInclude Include="Program\TNode\TNode.h" />
+    <ClInclude Include="QueryProcessor\Grammar.h" />
+    <ClInclude Include="QueryProcessor\IntermediateResult.h" />
+    <ClInclude Include="QueryProcessor\PatternMatcher.h" />
+    <ClInclude Include="QueryProcessor\QueryData.h" />
+    <ClInclude Include="QueryProcessor\QueryEvaluator.h" />
+    <ClInclude Include="QueryProcessor\QueryPreProcessor.h" />
+    <ClInclude Include="QueryProcessor\QueryProcessor.h" />
+    <ClInclude Include="QueryProcessor\RelTable.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Parser\DesignExtractor.cpp" />
+    <ClCompile Include="PKB\Next.cpp" />
+    <ClCompile Include="PKB\Calls.cpp" />
+    <ClCompile Include="Parser\Parser.cpp" />
+    <ClCompile Include="Parser\Token.cpp" />
+    <ClCompile Include="Parser\Tokenizer.cpp" />
+    <ClCompile Include="PKB\ConstTable.cpp" />
+    <ClCompile Include="PKB\Follows.cpp" />
+    <ClCompile Include="PKB\Modifies.cpp" />
+    <ClCompile Include="PKB\Parent.cpp" />
+    <ClCompile Include="PKB\ProcTable.cpp" />
+    <ClCompile Include="PKB\StmtTypeTable.cpp" />
+    <ClCompile Include="PKB\Uses.cpp" />
+    <ClCompile Include="PKB\VarTable.cpp" />
+    <ClCompile Include="Program\Program.cpp" />
+    <ClCompile Include="Program\TNode\TNode.cpp" />
+    <ClCompile Include="QueryProcessor\IntermediateResult.cpp" />
+    <ClCompile Include="QueryProcessor\PatternMatcher.cpp" />
+    <ClCompile Include="QueryProcessor\QueryData.cpp" />
+    <ClCompile Include="QueryProcessor\QueryEvaluator.cpp" />
+    <ClCompile Include="QueryProcessor\QueryPreprocessor.cpp" />
+    <ClCompile Include="QueryProcessor\QueryProcessor.cpp" />
+    <ClCompile Include="QueryProcessor\RelTable.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="sample_SIMPLE_source.txt" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DC21A1EA-D2C6-4D14-A2B4-E025B64BDE81}</ProjectGuid>
+    <RootNamespace>SPA</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)lib\Autotester_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>$(SolutionDir)lib\AutoTester_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>$(SolutionDir)lib\AutoTesterLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
