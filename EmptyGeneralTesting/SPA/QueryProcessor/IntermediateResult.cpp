@@ -16,7 +16,7 @@ synonymList_STR
 [v] - empty vector 
 [p] - empty vector 
 */
-void IntermediateResult::Initialize(const std::vector<Declaration> declarations
+void IntermediateResult::Initialize(const std::vector<Declaration> declarations)
 {
 	for(std::vector<Declaration>::const_iterator it = declarations.begin(); it != declarations.end(); ++it)
 	{
@@ -30,6 +30,8 @@ void IntermediateResult::Initialize(const std::vector<Declaration> declarations
 		{
 			synonymList_INT[value] = std::vector<int>();
 		}
+
+		synonyms.push_back(it->synonym);
 	}
 
 	return;
@@ -92,15 +94,11 @@ void IntermediateResult::MakeLink(std::string synonym_1, int index_1, std::strin
 	std::cout << "here\n";
 	if(std::find(link->begin(),link->end(),index_1) == link->end())  //1 is not linked to 2
 	{
-		//std::cout << "here2\n";
+
 		link->push_back(index_1);
 		std::sort(link->begin(),link->end());
 	}
-	//std::cout << "here3\n";
 }
-
-
-
 
 void IntermediateResult::GetList(std::string synonym, std::vector<int>& list)
 {
@@ -131,6 +129,40 @@ void IntermediateResult::GetList(std::string synonym, std::vector<std::string>& 
 
 	return;
 }
+
+bool IntermediateResult::IsListEmpty(Synonym synonym)
+{
+	bool empty = true;
+
+	if(synonym.type == VARIABLE || synonym.type == PROCEDURE)
+	{
+		for(it_synonymList_STR it = synonymList_STR.begin(); it != synonymList_STR.end(); ++it)
+		{
+			if(it->first == synonym.value) {
+				if(!it->second.empty())
+					empty = false;
+				return empty;
+			}
+		}
+	}
+
+	else
+	{
+		for(it_synonymList_INT it = synonymList_INT.begin(); it != synonymList_INT.end(); ++it)
+		{
+			if(it->first == synonym.value) {
+				if(!it->second.empty())
+					empty = false;
+				return empty;
+			}
+		}
+	}
+
+	std::cout << "In IntermediateResult::IsListEmpty, " << synonym.value << " not found in both synonymList\n";
+
+	return empty;
+}
+
 
 void IntermediateResult::Print()
 {
@@ -173,4 +205,9 @@ void IntermediateResult::Print()
 	}
 
 	return;
+}
+
+std::vector<Synonym> IntermediateResult::GetAllSynonyms()
+{
+	return synonyms;
 }

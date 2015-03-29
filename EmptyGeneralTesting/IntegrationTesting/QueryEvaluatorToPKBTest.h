@@ -17,7 +17,7 @@
 class QueryEvaluatorToPKBTest : public CPPUNIT_NS::TestFixture {
 	CPPUNIT_TEST_SUITE(QueryEvaluatorToPKBTest);
 	//CPPUNIT_TEST(TestSelectAll);
-	//CPPUNIT_TEST(TestParent);
+	CPPUNIT_TEST(TestParent);
 	//CPPUNIT_TEST(TestParentT);
 	//CPPUNIT_TEST(TestFollows);
 	//CPPUNIT_TEST(TestUses);

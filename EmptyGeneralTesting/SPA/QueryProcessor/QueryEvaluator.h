@@ -13,20 +13,12 @@ class QueryEvaluator
 
 protected:
 
-	/*struct IntermediateResult {
-		Synonym synonym;
-		vector<int> resultInt;
-		vector<string> resultVar;
-
-		IntermediateResult(Synonym s) : synonym(s) , resultInt(), resultVar() {}
-	};*/
-
 	IntermediateResult intermediateResult;
 
-	//bool EvaluateModifies(SuchThatClause, vector<IntermediateResult>&);
-	//bool EvaluateParent(SuchThatClause, vector<IntermediateResult>&);
-	//bool EvaluateFollows(SuchThatClause, vector<IntermediateResult>&);
-	//bool EvaluatePattern(PatternClause, vector<IntermediateResult>&);
+	bool EvaluateModifies(SuchThatClause);
+	bool EvaluateParent(SuchThatClause);
+	bool EvaluateFollows(SuchThatClause);
+	bool EvaluatePattern(PatternClause);
 
 	string ToString(int);
 	Pattern CreatePatternObject(string);

@@ -5,8 +5,8 @@
 #include "RelTable.h"
 #include "..\..\AutoTester\source\AbstractWrapper.h"
 
-const std::string QueryPreProcessor::de[] = {"stmt", "assign", "while", "variable", "prog_line", "constant"};
-const std::string QueryPreProcessor::rel[] = {"Modifies", "Uses", "Parent", "Parent*", "Follows", "Follows*"};
+const std::string QueryPreProcessor::de[] = {"stmt", "assign", "while", "if", "variable", "procedure", "prog_line", "constant"};
+const std::string QueryPreProcessor::rel[] = {"Modifies", "Uses", "Parent", "Parent*", "Follows", "Follows*", "Calls", "Calls*", "Next", "Next*", "Affects", "Affects*"};
  
 QueryPreProcessor::QueryPreProcessor(void) {}
 
@@ -91,16 +91,51 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 		}
 		token = *it;
 		//std::cout << "token: " << token << "\n";
-				
-		Synonym synonym;
-		synonym.value = token;
 
-		if(!ValidateSelect(synonym))	return false;
-			
-		else queryData.InsertSelect(synonym);
+		//select <a,w,v>
+		if(IsOpenBracket(token))
+		{
+			if(++it == tokenList.end())	return false;
+			token = *it;
+
+			while(!IsCloseBracket(token))
+			{
+				Synonym synonym;
+				synonym.value = token;
+
+				if(!ValidateSelect(synonym))	return false;
+				else queryData.InsertSelect(synonym);
+
+				if(++it == tokenList.end())	return false;
+				token = *it;
+			}
+
+			//if no data in selectclause
+			if(queryData.GetSizeOfClause(SELECT) == 0)	return false;
+		}
+
+		//Select BOOLEAN
+		else if(IsBoolean(token))
+		{
+			Synonym synonym;
+			synonym.type = BOOLEAN;
+			synonym.value = "BOOLEAN";
+
+			queryData.InsertSelect(synonym);
+		}
+		
+
+		//select a
+		else
+		{
+			Synonym synonym;
+			synonym.value = token;
+
+			if(!ValidateSelect(synonym))	return false;			
+			else queryData.InsertSelect(synonym);
+		}
+		
 	}
-
-
 
 	//no select
 	else return false;
@@ -115,10 +150,12 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 	while(IsSuchThat(token) || IsPattern(token) || IsWith(token)) 
 	{
 		bool endOfQuery = false, hasSuchThat = false, hasPattern = false, hasWith = false;
+		bool repeat = false;	//repeat after AND
 
-		if(IsSuchThat(token))	//such that or and
+		//such that ... and such that ... will not work
+		while(IsSuchThat(token) || repeat)	//such that 
 		{
-			if(IsSuchThat(token))	//"such"
+			if(!repeat)
 			{
 				if(++it == tokenList.end())	return false;	//ignore "that"
 				token = *it;
@@ -149,21 +186,23 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 			}
 
 			else return false;
-			
-			hasSuchThat = true;
 
-			if(++it == tokenList.end())
-				endOfQuery = true; //if no more token = end of query
-
+			if(++it == tokenList.end())	return true;
 			else token = *it;
+
+			if(IsAnd(token))	repeat = true;
+			else				repeat = false;
+
+			if(AbstractWrapper::GlobalStop)	return false;
 		}
 
-		//to ensure maximum 1 such that and 1 pattern in query
-		if(endOfQuery || (hasSuchThat && hasPattern && hasWith))	return true;
-
-		if(IsPattern(token))	//pattern or and
+		while(IsPattern(token) || repeat)	//pattern or and
 		{		
 			//std::cout << "In Pattern\n";
+			//pattern a("x",_)
+			//pattern if("x",_,_)
+			//pattern w("w",_)
+
 			Argument arg1, arg2;
 			Synonym synonym;
 
@@ -179,13 +218,23 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 			token = *it;
 			arg2.value = token;
 
-			if(QueryData::IsSynonymExist(synonym.value, ASSIGN))	//only assign, a("x","x+y")	
+
+			//get the type of synonym
+			if(!QueryData::IsSynonymExist(synonym.value, synonym.type)) return false;
+			
+			if(synonym.type == IF)
 			{
-				synonym.type = ASSIGN;
-
-				if(!ValidatePattern(synonym, arg1, arg2))	
-					return false;
-
+				if(++it == tokenList.end())	return false;	//get arg3 and ignore it, since it must be _
+				Argument arg3;
+				arg3.value = *it;
+				
+				if(!ValidatePattern(synonym, arg1, arg2, arg3))	return false;
+				queryData.InsertPattern(synonym, arg1, arg2);	//just insert 2, because only the first one matter for IF
+			}
+			
+			else if(synonym.type == WHILE || synonym.type == ASSIGN)
+			{
+				if(!ValidatePattern(synonym, arg1, arg2))	return false;
 				queryData.InsertPattern(synonym, arg1, arg2);
 			}
 
@@ -194,47 +243,41 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 				return false;
 			}
 
-			hasPattern = true;
-
-			if(++it == tokenList.end())
-				endOfQuery = true;	//if no more token = end of query
-
+			if(++it == tokenList.end())	return true;
 			else token = *it;
+
+			if(IsAnd(token))	repeat = true;
+			else				repeat = false;
+
+			if(AbstractWrapper::GlobalStop)	return false;
 		}
 
-		if(endOfQuery || (hasSuchThat && hasPattern && hasWith))	return true;
-
-		if(IsWith(token))	//with or and
+		while(IsWith(token) || repeat)	//with or and
 		{		
-	
 			Argument arg1, arg2;
 
 			if(++it == tokenList.end())	return false;	//get arg1
 			token = *it;
 			arg1.value = token;
-
 			
+			//skip "="
 			if(++it == tokenList.end())	return false;	
-			token = *it; // jump "="
-			if(token != "=") return false;
+			if(*it != "=") return false;
 
 			if(++it == tokenList.end())	return false;	//get arg2
-			token = *it;
-			arg2.value = token;
+			arg2.value = *it;
 
+			if(!ValidateWith(arg1, arg2))	return false;
 			queryData.InsertWith(arg1, arg2);
 
-			hasWith = true;
-
-			if(++it == tokenList.end())
-				endOfQuery = true;	//if no more token = end of query
-
+			if(++it == tokenList.end())	return true;
 			else token = *it;
+
+			if(IsAnd(token))	repeat = true;
+			else				repeat = false;
+
+			if(AbstractWrapper::GlobalStop)	return false;
 		}
-
-		if(endOfQuery || (hasSuchThat && hasPattern && hasWith))	return true;
-
-		if(AbstractWrapper::GlobalStop)	return false;
 	}
 
 	return false;
@@ -541,8 +584,67 @@ bool QueryPreProcessor::ValidatePattern(Synonym synonym, Argument &arg1, Argumen
 		return true;
 	}
 
-	else {
-		std::cout << "Invalid Query: In ValidatePattern, Synonym type is not assign.\n";
+	
+	//pattern w(v,_)
+	//pattern w("x",_)
+	//pattern w(_,_)
+	else if(synonym.type == WHILE)
+	{
+		if(!IsUnderscore(arg2.value)) return false;		//arg2 must be _
+
+		if(IsUnderscore(arg1.value)) arg1.type = UNDERSCORE;
+		
+		else if(QueryData::IsSynonymExist(arg1.value, VARIABLE))	//must be variable
+		{
+			arg1.type = SYNONYM;
+			arg1.syn = Synonym(arg1.value, VARIABLE);
+		}
+			
+		else if(IsIdent(arg1.value)) arg1.type = IDENT;
+
+		else {
+			std::cout << "Invalid Query: In ValidatePattern, Argument 1 type not found.\n";
+			return false;
+		}
+	}
+
+	else 
+	{
+		std::cout << "Invalid Query: In ValidatePattern, Synonym type is not ASSIGN or WHILE.\n";
+		return false;
+	}
+}
+
+//Only cater to IF
+//this function can call the above validatepattern with while
+bool QueryPreProcessor::ValidatePattern(Synonym synonym, Argument &arg1, Argument &arg2, Argument &arg3)
+{
+	//pattern if(v,_,_)
+	//pattern if("x",_,_)
+	//pattern if(_,_,_)
+	if(synonym.type == IF)
+	{
+		if(!IsUnderscore(arg2.value) || !IsUnderscore(arg3.value)) return false;		//arg2 and arg3 must be _
+
+		if(IsUnderscore(arg1.value)) arg1.type = UNDERSCORE;
+		
+		else if(QueryData::IsSynonymExist(arg1.value, VARIABLE))	//must be variable
+		{
+			arg1.type = SYNONYM;
+			arg1.syn = Synonym(arg1.value, VARIABLE);
+		}
+			
+		else if(IsIdent(arg1.value)) arg1.type = IDENT;
+
+		else {
+			std::cout << "Invalid Query: In ValidatePattern, Argument 1 type not found.\n";
+			return false;
+		}
+	}
+
+	else 
+	{
+		std::cout << "Invalid Query: In ValidatePattern, Synonym type is not IF.\n";
 		return false;
 	}
 }
@@ -643,6 +745,16 @@ bool QueryPreProcessor::ValidateRelationship(std::string rel, RelationshipType &
 		return false;
 	}
 }
+
+bool QueryPreProcessor::ValidateWith(Argument& arg1, Argument& arg2)
+{
+
+
+	return false;
+}
+
+
+
 
 /*
 _"factor"_
@@ -759,10 +871,10 @@ bool QueryPreProcessor::GetEnumSynonymType(std::string type, SynonymType &enumTy
 	else if(type == "variable")		enumType = VARIABLE;
 	else if(type == "prog_line")	enumType = PROG_LINE;
 	else if(type == "constant")		enumType = CONSTANT;
-	//else if(type == "if")			enumType = IF;
-	//else if(type == "procedure")	enumType = PROCEDURE;
-	//else if(type == "call")		enumType = CALL;
-	//else if(type == "BOOLEAN")	enumType = BOOLEAN;
+	else if(type == "if")			enumType = IF;
+	else if(type == "procedure")	enumType = PROCEDURE;
+	else if(type == "call")			enumType = CALL;
+	else if(type == "BOOLEAN")		enumType = BOOLEAN;
 	else return false;
 
 	return true;
@@ -779,12 +891,12 @@ bool QueryPreProcessor::GetEnumRelationshipType(std::string type, RelationshipTy
 	else if(type == "Parent*")		enumType = PARENTT;
 	else if(type == "Follows")		enumType = FOLLOWS;
 	else if(type == "Follows*")		enumType = FOLLOWST;
-	//else if(type == "Calls")		enumType = CALLS;
-	//else if(type == "Calls*")		enumType = CALLST;
-	//else if(type == "Next")			enumType = NEXT;
-	//else if(type == "Next*")		enumType = NEXTT;
-	//else if(type == "Affects")		enumType = AFFECTS;
-	//else if(type == "Affects&")		enumType = AFFECTST;
+	else if(type == "Calls")		enumType = CALLS;
+	else if(type == "Calls*")		enumType = CALLST;
+	else if(type == "Next")			enumType = NEXT;
+	else if(type == "Next*")		enumType = NEXTT;
+	else if(type == "Affects")		enumType = AFFECTS;
+	else if(type == "Affects&")		enumType = AFFECTST;
 	else return false;
 
 	return true;
@@ -830,6 +942,31 @@ bool QueryPreProcessor::IsWith(std::string str)
 	return false;
 }
 
+bool QueryPreProcessor::IsOpenBracket(std::string str)
+{
+	if(str == "<")	return true;
+	return false;
+}
+
+bool QueryPreProcessor::IsCloseBracket(std::string str)
+{
+	if(str == ">")	return true;
+	return false;
+}
+
+bool QueryPreProcessor::IsAnd(std::string str)
+{
+	if(str == "and")	return true;
+	return false;
+}
+
+bool QueryPreProcessor::IsBoolean(std::string str)
+{
+	if(str == "BOOLEAN")	return true;
+	return false;
+}
+
+
 /*
 Check whether string is one of the design entities
 */
@@ -854,4 +991,227 @@ bool QueryPreProcessor::IsRelationship(std::string str)
 		return true;
 
 	return false;
+}
+
+
+
+
+
+
+
+bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &tokens) 
+{
+	bool isIdent = false, isExpression = false, isProgLine = false;
+
+	query += " ";	//add a whitespace behind, to handle case like assign a;Select a, if not the a will not get push back
+
+	for (unsigned int pos = 0; pos < query.length(); pos++) 
+	{ 
+		char currentChar = query[pos];
+		static std::string integer = "";
+		static std::string alphaString = "";
+
+		//std::cout << "char[" << pos << "] : " << currentChar << "\n";
+
+		//integer
+		if (currentChar >= 48 && currentChar <= 57) 
+		{
+			//std::cout << "In Integer\n";
+			if (alphaString == "")	integer = integer + currentChar;	
+			else					alphaString = alphaString + currentChar;	//the integer belong to part of a string
+		} 
+		
+		//character
+		else if ((currentChar >= 65 && currentChar <= 90) || (currentChar >= 97 && currentChar <= 122)) 
+		{
+			//std::cout << "In alphabet\n";
+			if (integer != "")	return false;	//should not happen
+			else				alphaString = alphaString + currentChar;
+		} 
+		
+		else 
+		{ // symbol, whitespace or endline
+			//std::cout << "In Others\n";
+			//push back integer/string first 
+			if (integer != "") 
+			{ 
+				tokens.push_back(integer);
+				integer = "";
+			} 
+
+			else if (alphaString != "") 
+			{ 
+				//prog_line, wait for _ , don't push
+				if(alphaString == "prog") 
+					isProgLine = true;
+
+				//Parent*/Next* etc
+				else if(currentChar == '*') 
+				{
+					tokens.push_back(alphaString+"*");
+					alphaString = "";
+					continue;
+				}
+	
+				//if string begins with " or _ which means an expression or IDENT, don't push
+				else if(!(alphaString.at(0) == '"' || alphaString.at(0) == '_'))
+				{
+					tokens.push_back(alphaString);
+					alphaString = "";
+				}
+			}
+
+			/*
+			( - ignore
+			) - ignore
+			, - ignore
+			; - push back
+			" - push back
+			_ - push back
+			*/
+			//if is ( or ) or , just ignore
+			if (currentChar == '(' || currentChar == ')') 
+			{
+				if(currentChar == ')')
+				{
+					if(alphaString != "")
+					{	//handle _, e.g. Parent(w,_)
+						tokens.push_back(alphaString);
+						alphaString = "";
+						isExpression = false;
+						isIdent = false;
+					}
+					else continue;
+				}
+
+				else continue;
+			}
+
+			else if(currentChar == ',') {
+				//std::cout << "In ,\n";
+				if(isExpression)	//current string start with underscore, push back the first char
+				{
+					//std::cout << "In isExpression\n";
+					std::string cs(1,alphaString.at(0));
+					tokens.push_back(cs);
+					isExpression = false;
+					alphaString = "";
+				}
+
+				else continue;
+			}
+
+			//if is white space, depends on previous string
+			else if (currentChar == '	' || currentChar == '\r' || currentChar == '\n' || currentChar == ' ') {
+				//std::cout << "In space\n";
+				//if previous string is not empty means it is an expression or IDENT " x " , " x + y " , _ " x + 5 " _ or just _ 
+				//if former case, do not ignore white space
+				//if latter case, pushback tokens
+
+				if (alphaString != "")
+					alphaString += currentChar;
+				
+				//if previous string is empty, ignore whitespace
+				else continue;
+			} 
+
+			else {
+				if(currentChar == ';')
+				{
+					//std::cout << "In ;\n";
+					tokens.push_back(";");
+				}
+
+				else if(currentChar == '"')
+				{
+					//std::cout << "In \"\n";
+					//if alphastring is empty, add to alphastring
+					//else if alphastring is not empty, check if first char is either " or _, if yes add to alphastring and push back, clear alphastring
+					//else return false
+
+					if(alphaString == "") {
+						//std::cout << "In empty string\n";
+						alphaString += currentChar;
+						isIdent = true;
+					}
+
+					else {
+						if(isIdent) {
+							//std::cout << "In isIdent \"\n";
+							alphaString += currentChar;
+							tokens.push_back(alphaString);
+							alphaString = "";
+							isIdent = false;
+						}
+
+						else if(isExpression) {
+							//std::cout << "In isExpression\n";
+							alphaString += currentChar;
+						}
+
+						else {
+							//std::cout << "Whaaa??\n";
+							return false;
+						}
+					}
+				}
+
+				else if(currentChar == '_')
+				{
+					//std::cout << "In _\n";
+					//start of an expression
+					if(alphaString == "") {
+						//std::cout << "In empty string\n";
+						alphaString += currentChar;
+						isExpression = true;
+					}
+
+					else {
+						//end of an expression
+						if(isExpression) {
+							//std::cout << "In isExpression\n";
+							alphaString += currentChar;
+							tokens.push_back(alphaString);
+							alphaString = "";
+							isExpression = false;
+						}
+						//prog_
+						else if(isProgLine) {
+							alphaString += currentChar;
+							isProgLine = false;
+						}
+						else {
+							std::cout << "Whaaa??\n";
+							return false;
+						}
+					}
+				}
+
+				//+ can only occur in an expression
+				else if(currentChar == '+') 
+				{
+					//std::cout << "In +\n";
+					//part of an expression
+					if(isExpression) {
+						//std::cout << "In isExpression\n";
+						alphaString += currentChar;
+					}
+
+					else {
+						std::cout << "Invalid character +\n";
+						return false;
+					}
+				}
+
+				else {
+					std::cout << "Invalid character.\n";
+					return false;
+				}
+			}
+		}
+
+		//std::cout << "fine\n";
+	}
+
+	return true;
 }

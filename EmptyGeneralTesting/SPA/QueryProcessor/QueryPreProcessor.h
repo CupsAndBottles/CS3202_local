@@ -17,7 +17,9 @@ protected:
 	bool ValidateDeclaration(Synonym&, std::string);
 	bool ValidateSelect(Synonym&);
 	bool ValidateRelationship(std::string, RelationshipType&, Argument&, Argument&);
-	bool ValidatePattern(Synonym, Argument&, Argument&);
+	bool ValidatePattern(Synonym synonym, Argument& arg1, Argument& arg2);
+	bool ValidatePattern(Synonym synonym, Argument& arg1, Argument& arg2, Argument& arg3);
+	bool ValidateWith(Argument& arg1, Argument& arg2);
 
 	//Validate Argument
 	bool IsInteger(const std::string&);
@@ -34,6 +36,10 @@ protected:
 	bool IsPattern(std::string);
 	bool IsUnderscore(std::string);
 	bool IsWith(std::string);
+	bool IsOpenBracket(std::string str);
+	bool IsCloseBracket(std::string str);
+	bool IsAnd(std::string);
+	bool IsBoolean(std::string str);
 
 	//Convert string to enum
 	bool GetEnumSynonymType(std::string, SynonymType&); 

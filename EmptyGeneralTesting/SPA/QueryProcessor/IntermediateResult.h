@@ -26,6 +26,7 @@ private:
 	std::map<std::string,std::vector<Element>> linkMap ;	//synonym and its element and links
 	std::map<std::string,std::vector<int>> synonymList_INT;					//map for for a,s,w,if,n and corresponding elements
 	std::map<std::string,std::vector<std::string>> synonymList_STR;			//map for p,v and corresponding elements
+	std::vector<Synonym> synonyms;	//just a list of all declared synonyms
 
 public:
 
@@ -33,10 +34,12 @@ public:
 	void Initialize(const std::vector<Declaration> declarations);	//initialize with list of pair(synonymtype, synonym)
 	void Insert(std::string synonym , int value);
 	void Insert(std::string synonym , std::string value);
-	void Remove(std::string synonym , std::string value);
+	//void Remove(std::string synonym , std::string value);
 	void MakeLink(std::string synonym_1, int index_1, std::string synonym_2, int index_2);	//use index to avoid overload function
 	void GetList(std::string synonym, std::vector<int>& list);
 	void GetList(std::string synonym, std::vector<std::string>& list);
+	bool IsListEmpty(Synonym synonym);
+	std::vector<Synonym> GetAllSynonyms();
 	void Print();
 
 	
@@ -58,6 +61,7 @@ public:
 	template<typename T> void GetSynonymListIndex(std::string synonym , T value , bool &exist , int &index , bool wantToInsert)
 	{}
 	
+	//Get index of an element in synonym list, so you can use it with linkMap
 	template<> void GetSynonymListIndex<int>(std::string synonym , int value , bool &exist , int &index, bool wantToInsert)
 	{
 		std::cout << "GetSynonymListIndex<int>, " << synonym << " " << value << "\n";
@@ -288,4 +292,46 @@ public:
 			}
 		}
 	}
+
+	template<typename T , typename U> bool HasLink(std::string synonym_1 , T value_1, std::string synonym_2 , U value_2)
+	{	
+		//only need to check for one direction
+		int index_1 = INT_MAX, index_2 = INT_MAX;
+		bool exist_1 = false, exist_2 = false;
+
+		GetSynonymListIndex(synonym_1 , value_1 , exist_1 , index_1 , false);
+		GetSynonymListIndex(synonym_2 , value_2 , exist_2 , index_2 , false);
+
+		//if either one doesnt exist
+		if(!exist_1 || !exist_2)
+		{
+			std::cout << "In HasLink, something wrong\n";
+			return false;
+		}
+
+		std::vector<int> links = linkMap[synonym_1][index_1].links[synonym_2];
+
+		if(std::find(links.begin(),links.end(),index_2) != links.end())
+			return true;
+
+		return false;
+	}
+
+
+	template<typename T , typename U> void RemovePair(std::string synonym_1 , T value_1, std::string synonym_2 , U value_2)
+	{
+		int index_1 = INT_MAX, index_2 = INT_MAX;
+		bool exist_1 = false, exist_2 = false;
+
+		//No need check exist, remove already check
+
+		Remove(synonym_1 , value_1);
+		Remove(synonym_2 , value_2);
+	}
+
+
+
+
+
+
 };

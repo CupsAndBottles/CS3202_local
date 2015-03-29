@@ -176,7 +176,7 @@ void QueryEvaluatorToPKBTest::TestParent()
 	qd.ClearData();
 
 	std::string query = "assign a;while w;Select a such that Parent(w,a)";
-	//std::cout << "Test query : " << query << "\n";
+	std::cout << "Test query : " << query << "\n";
 
 	CPPUNIT_ASSERT_MESSAGE("Query is valid", qv.ValidateQuery(query, qd));	
 	CPPUNIT_ASSERT_MESSAGE("Query is successfully evaluated", qe.EvaluateQuery(qd, resultList));

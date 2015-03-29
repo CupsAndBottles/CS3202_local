@@ -8,12 +8,12 @@ enum RelationshipType {
 	PARENTT,
 	FOLLOWS,
 	FOLLOWST,
-	//CALLS,
-	//CALLST,
-	//NEXT,
-	//NEXTT,
-	//AFFECTS,
-	//AFFECTST
+	CALLS,
+	CALLST,
+	NEXT,
+	NEXTT,
+	AFFECTS,
+	AFFECTST,
 	INVALID_RELATIONSHIP_TYPE
 };
 
@@ -35,9 +35,17 @@ enum SynonymType {
 	CONSTANT,
 	PROCEDURE,
 	PROG_LINE,
-	CALL,
 	BOOLEAN,
 	INVALID_SYNONYM_TYPE
+};
+
+enum ClauseType {
+	DECLARATION,
+	SELECT,
+	SUCHTHAT,
+	WITH,
+	PATTERN,
+	INVALID_CLAUSE_TYPE
 };
 
 struct Synonym {
@@ -81,7 +89,7 @@ struct SelectClause {
 
 struct PatternClause {
 	Synonym synonym;
-	Argument arg1, arg2;
+	Argument arg1, arg2;	//since arg2 and arg3 of if are _, just ignore, only need 1
 
 	PatternClause(Synonym s, Argument a1, Argument a2) : synonym(s) , arg1(a1) , arg2(a2) {}
 };
