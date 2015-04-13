@@ -1,21 +1,21 @@
 #include "RelTable.h"
 #include <iostream>
-
+//stmt, assign, while, if, call, prog_line, constant, variable, procedure
 /*
 Modifies(Synonym | "Ident" | Integer , Synonym | _ | "Ident")
 Uses	(Synonym | "Ident" | Integer , Synonym | _ | "Ident")
-Argument 1 synonym - stmt, assign, while, prog_line, procedure
+Argument 1 synonym - stmt, assign, while, if, call, prog_line, procedure
 Argument 2 synonym - variable
 
 Parent (Synonym | _ | Integer , Synonym | _ | Integer)
 Parent*(Synonym | _ | Integer , Synonym | _ | Integer)
-Argument 1 synonym - stmt, while, prog_line, if
-Argument 2 synonym - stmt, assign, while, prog_line, if
+Argument 1 synonym - stmt, while, if, prog_line
+Argument 2 synonym - stmt, assign, while, if, prog_line, call
 
 Follows (Synonym | _ | Integer , Synonym | _ | Integer)
 Follows*(Synonym | _ | Integer , Synonym | _ | Integer)
-Argument 1 synonym - stmt, assign, while, prog_line, if
-Argument 2 synonym - stmt, assign, while, prog_line, if
+Argument 1 synonym - stmt, assign, while, if, prog_line, call
+Argument 2 synonym - stmt, assign, while, if, prog_line, call
 
 Calls (Synonym | "Ident" | _ , Synonym | "Ident" | _)
 Calls*(Synonym | "Ident" | _ , Synonym | "Ident" | _)
@@ -24,8 +24,8 @@ Argument 2 synonym - procedure
 
 Next (Synonym | _ | Integer , Synonym | _ | Integer)
 Next*(Synonym | _ | Integer , Synonym | _ | Integer)
-Argument 1 synonym - prog_line
-Argument 2 synonym - prog_line
+Argument 1 synonym - ASSIGN, WHILE, IF, CALL, prog_line
+Argument 2 synonym - ASSIGN, WHILE, IF, CALL, prog_line
 
 Affects (Synonym | _ | Integer , Synonym | _ | Integer)
 Affects*(Synonym | _ | Integer , Synonym | _ | Integer)
@@ -35,18 +35,18 @@ Argument 2 synonym - assign
 
 const ArgumentType RelTable::a1_modifies[] = {SYNONYM, INTEGER, IDENT};
 const ArgumentType RelTable::a2_modifies[] = {SYNONYM, UNDERSCORE, IDENT};
-const SynonymType RelTable::s1_modifies[] = {STMT, ASSIGN, WHILE, PROG_LINE, PROCEDURE};
+const SynonymType RelTable::s1_modifies[] = {STMT, ASSIGN, WHILE, IF, PROG_LINE, CALL, PROCEDURE};
 const SynonymType RelTable::s2_modifies[] = {VARIABLE};
 
 const ArgumentType RelTable::a1_parent[] = {SYNONYM, UNDERSCORE, INTEGER};
 const ArgumentType RelTable::a2_parent[] = {SYNONYM, UNDERSCORE, INTEGER};
-const SynonymType RelTable::s1_parent[] = {STMT, WHILE, PROG_LINE, IF};
-const SynonymType RelTable::s2_parent[] = {STMT, ASSIGN, WHILE, PROG_LINE, IF};
+const SynonymType RelTable::s1_parent[] = {STMT, WHILE, IF, PROG_LINE};
+const SynonymType RelTable::s2_parent[] = {STMT, ASSIGN, WHILE, IF, CALL, PROG_LINE};
 
 const ArgumentType RelTable::a1_follows[] = {SYNONYM, UNDERSCORE, INTEGER};
 const ArgumentType RelTable::a2_follows[] = {SYNONYM, UNDERSCORE, INTEGER};
-const SynonymType RelTable::s1_follows[] = {STMT, ASSIGN, WHILE, PROG_LINE, IF};
-const SynonymType RelTable::s2_follows[] = {STMT, ASSIGN, WHILE, PROG_LINE, IF};
+const SynonymType RelTable::s1_follows[] = {STMT, ASSIGN, WHILE, IF, PROG_LINE, CALL};
+const SynonymType RelTable::s2_follows[] = {STMT, ASSIGN, WHILE, IF, PROG_LINE, CALL};
 
 const ArgumentType RelTable::a1_calls[] = {SYNONYM, UNDERSCORE, IDENT};
 const ArgumentType RelTable::a2_calls[] = {SYNONYM, UNDERSCORE, IDENT};
@@ -55,8 +55,8 @@ const SynonymType RelTable::s2_calls[] = {PROCEDURE};
 
 const ArgumentType RelTable::a1_next[] = {SYNONYM, UNDERSCORE, INTEGER};
 const ArgumentType RelTable::a2_next[] = {SYNONYM, UNDERSCORE, INTEGER};
-const SynonymType RelTable::s1_next[] = {PROG_LINE};
-const SynonymType RelTable::s2_next[] = {PROG_LINE};
+const SynonymType RelTable::s1_next[] = {ASSIGN, WHILE, IF, CALL, PROG_LINE};
+const SynonymType RelTable::s2_next[] = {ASSIGN, WHILE, IF, CALL,PROG_LINE};
 
 const ArgumentType RelTable::a1_affects[] = {SYNONYM, UNDERSCORE, INTEGER};
 const ArgumentType RelTable::a2_affects[] = {SYNONYM, UNDERSCORE, INTEGER};

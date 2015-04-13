@@ -110,11 +110,11 @@ void QueryPreProcessorTest::ActualValidationTest()
 
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).synonym.value == "a");
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).synonym.type == ASSIGN);
-	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg1.value == "\" g3 \"");
+	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg1.value == "\"g3\"");
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg1.type == IDENT);
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg1.syn.value == "");
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg1.syn.type == INVALID_SYNONYM_TYPE);
-	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.value == "_\" x\" _");
+	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.value == "_\"x\"_");
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.type == EXPRESSION);
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.syn.value == "");
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.syn.type == INVALID_SYNONYM_TYPE);
@@ -161,7 +161,7 @@ void QueryPreProcessorTest::ActualValidationTest()
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg1.type == UNDERSCORE);
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg1.syn.value == "");
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg1.syn.type == INVALID_SYNONYM_TYPE);
-	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.value == "_\" x+ y\" _");
+	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.value == "_\"x+y\"_");
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.type == EXPRESSION);
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.syn.value == "");
 	CPPUNIT_ASSERT(qd.GetPatterns().at(0).arg2.syn.type == INVALID_SYNONYM_TYPE); 
@@ -622,24 +622,6 @@ void QueryPreProcessorTest::ClauseValidationTest()
 	CPPUNIT_ASSERT(arg2.syn.value == "");
 	CPPUNIT_ASSERT(arg2.syn.type == INVALID_SYNONYM_TYPE);
 
-	//synonym not assign
-	syn.value = "w";
-	syn.type = WHILE;
-	arg1.value = "v";
-	arg1.type = INVALID_ARGUMENT_TYPE;
-	arg1.syn = Synonym();
-	arg2.value = "_";
-	arg2.type = INVALID_ARGUMENT_TYPE;
-	arg2.syn = Synonym();
-	valid = qv.ValidatePattern(syn, arg1, arg2);
-	CPPUNIT_ASSERT(valid == false);
-	CPPUNIT_ASSERT(arg1.type == INVALID_ARGUMENT_TYPE);
-	CPPUNIT_ASSERT(arg1.syn.value == "");
-	CPPUNIT_ASSERT(arg1.syn.type == INVALID_SYNONYM_TYPE);
-	CPPUNIT_ASSERT(arg2.type == INVALID_ARGUMENT_TYPE);
-	CPPUNIT_ASSERT(arg2.syn.value == "");
-	CPPUNIT_ASSERT(arg2.syn.type == INVALID_SYNONYM_TYPE);
-
 	//argument 1 synonym is not a variable
 	syn.value = "a";
 	syn.type = ASSIGN;
@@ -969,17 +951,6 @@ void QueryPreProcessorTest::ClauseValidationTest()
 	CPPUNIT_ASSERT(arg2.syn.value == "");
 	CPPUNIT_ASSERT(arg2.syn.type == INVALID_SYNONYM_TYPE);
 
-	//invalid arg1 type
-	rel = "Modifies";
-	rel_enum = INVALID_RELATIONSHIP_TYPE;
-	arg1.value = "\"x\"";
-	arg1.type = INVALID_ARGUMENT_TYPE;
-	arg1.syn = Synonym();
-	arg2.value = "\"xyz\"";
-	arg2.type = INVALID_ARGUMENT_TYPE;
-	arg2.syn = Synonym();
-	valid = qv.ValidateRelationship(rel, rel_enum, arg1, arg2);
-	CPPUNIT_ASSERT(valid == false);
 
 	//invalid arg1 type
 	rel = "Modifies";
@@ -1024,25 +995,25 @@ void QueryPreProcessorTest::ArgumentValidationTest()
 
 	//Function in test : bool IsExpression(std::string)
 	bool matched = qd.IsExpression("\"x\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 	
 	matched = qd.IsExpression("\"xyz\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("\"x50\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("\"x388x3fg\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("\"45\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("\"0\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
-	matched = qd.IsExpression("\"25jj\"");
-	CPPUNIT_ASSERT(matched == false);
+	//matched = qd.IsExpression("\"25jj\"");
+	//CPPUNIT_ASSERT(matched == false);
 
 	matched = qd.IsExpression("\"=\"");
 	CPPUNIT_ASSERT(matched == false);
@@ -1054,19 +1025,19 @@ void QueryPreProcessorTest::ArgumentValidationTest()
 	CPPUNIT_ASSERT(matched == false);
 
 	matched = qd.IsExpression("\"x+y\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("\" x + y \"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("\" 5 + 7\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("\"4+a1\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("\" w +2\"");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("_");
 	CPPUNIT_ASSERT(matched == false);
@@ -1099,12 +1070,21 @@ void QueryPreProcessorTest::ArgumentValidationTest()
 	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("_\"x*y\"_");
-	CPPUNIT_ASSERT(matched == false);
+	CPPUNIT_ASSERT(matched == true);
 
 	matched = qd.IsExpression("_\"x+y\"");
 	CPPUNIT_ASSERT(matched == false);
 
 	matched = qd.IsExpression("\"x+y\"_");
+	CPPUNIT_ASSERT(matched == false);
+
+	matched = qd.IsExpression("\"x-y\"_");
+	CPPUNIT_ASSERT(matched == false);
+
+	matched = qd.IsExpression("\"x - y\"_");
+	CPPUNIT_ASSERT(matched == false);
+
+	matched = qd.IsExpression("\"(x-y)*z\"_");
 	CPPUNIT_ASSERT(matched == false);
 
 	matched = qd.IsExpression("_\"=,-9,v=0,5\"");
@@ -1501,6 +1481,97 @@ void QueryPreProcessorTest::HelperFunctionTest()
 
 void QueryPreProcessorTest::ValidateRelationshipTest()
 {
+	QueryPreProcessor qp;
+	QueryData qd;
+	qd.ClearData();
+	qd.InsertDeclaration(Synonym("a",ASSIGN));
+	qd.InsertDeclaration(Synonym("a1",ASSIGN));
+	qd.InsertDeclaration(Synonym("a2",ASSIGN));
+	qd.InsertDeclaration(Synonym("w",WHILE));
+	qd.InsertDeclaration(Synonym("w1",WHILE));
+	qd.InsertDeclaration(Synonym("w2",WHILE));
+	qd.InsertDeclaration(Synonym("s",STMT));
+	qd.InsertDeclaration(Synonym("ifstat",IF));
+	qd.InsertDeclaration(Synonym("v",VARIABLE));
+	qd.InsertDeclaration(Synonym("p",PROCEDURE));
+	qd.InsertDeclaration(Synonym("c",CONSTANT));
+	qd.InsertDeclaration(Synonym("n",PROG_LINE));
+	
+	//*****************************VALID*********************************
+	std::string rel;
+	Argument arg1, arg2;;
+	RelationshipType rel_enum = INVALID_RELATIONSHIP_TYPE;
+
+	//Affects with arg1 SYNONYM , arg2 SYNONYM
+	rel = "Affects";
+	arg1.value = "a1";
+	arg2.value = "a2";
+	CPPUNIT_ASSERT(qp.ValidateRelationship(rel , rel_enum , arg1 , arg2) == true);
+	CPPUNIT_ASSERT(rel_enum == AFFECTS);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "a1");
+	CPPUNIT_ASSERT(arg1.syn.type == ASSIGN);
+	CPPUNIT_ASSERT(arg1.syn.value == "a1");
+	CPPUNIT_ASSERT(arg2.type == SYNONYM);
+	CPPUNIT_ASSERT(arg2.value == "a2");
+	CPPUNIT_ASSERT(arg2.syn.type == ASSIGN);
+	CPPUNIT_ASSERT(arg2.syn.value == "a2");
+
+	//Affects with arg1 INTEGER , arg2 SYNONYM
+	rel = "Affects";
+	arg1.value = "100";
+	arg2.value = "a";
+	CPPUNIT_ASSERT(qp.ValidateRelationship(rel , rel_enum , arg1 , arg2) == true);
+	CPPUNIT_ASSERT(rel_enum == AFFECTS);
+	CPPUNIT_ASSERT(arg1.type == INTEGER);
+	CPPUNIT_ASSERT(arg1.value == "100");
+	CPPUNIT_ASSERT(arg2.type == SYNONYM);
+	CPPUNIT_ASSERT(arg2.value == "a");
+	CPPUNIT_ASSERT(arg2.syn.type == ASSIGN);
+	CPPUNIT_ASSERT(arg2.syn.value == "a");
+
+	//Affects with arg1 SYNONYM , arg2 INTEGER
+	rel = "Affects";
+	arg1.value = "a";
+	arg2.value = "5";
+	CPPUNIT_ASSERT(qp.ValidateRelationship(rel , rel_enum , arg1 , arg2) == true);
+	CPPUNIT_ASSERT(rel_enum == AFFECTS);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "a");
+	CPPUNIT_ASSERT(arg1.syn.type == ASSIGN);
+	CPPUNIT_ASSERT(arg1.syn.value == "a");
+	CPPUNIT_ASSERT(arg2.type == INTEGER);
+	CPPUNIT_ASSERT(arg2.value == "5");
+
+	//Affects with arg1 INTEGER , arg2 INTEGER
+	rel = "Affects";
+	arg1.value = "4";
+	arg2.value = "5";
+	CPPUNIT_ASSERT(qp.ValidateRelationship(rel , rel_enum , arg1 , arg2) == true);
+	CPPUNIT_ASSERT(rel_enum == AFFECTS);
+	CPPUNIT_ASSERT(arg1.type == INTEGER);
+	CPPUNIT_ASSERT(arg1.value == "4");
+	CPPUNIT_ASSERT(arg2.type == INTEGER);
+	CPPUNIT_ASSERT(arg2.value == "5");
+
+	//Affects*
+
+	//Next
+
+	//Next*
+
+	//...
+
+
+
+	//*******************************************************************
+
+
+	//*****************************INVALID*********************************
+
+
+
+	//*********************************************************************
 
 }
 
@@ -1523,24 +1594,118 @@ void QueryPreProcessorTest::ValidatePatternTest()
 	Argument arg1, arg2, arg3;
 
 	syn.value = "ifstat";
+	syn.type = IF;
 	arg1.value = "\" x \"";
 	arg2.value = "_";
 	arg3.value = "_";
 	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == true);
+	CPPUNIT_ASSERT(arg1.type == IDENT);
+	CPPUNIT_ASSERT(arg1.value == "\"x\"");
+	CPPUNIT_ASSERT(arg2.type == UNDERSCORE);
+	CPPUNIT_ASSERT(arg2.value == "_");
+	CPPUNIT_ASSERT(arg3.type == UNDERSCORE);
+	CPPUNIT_ASSERT(arg3.value == "_");
+
+	syn.value = "ifstat";
+	syn.type = IF;
+	arg1.value = "v";
+	arg2.value = "_";
+	arg3.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == true);
 	CPPUNIT_ASSERT(arg1.type == SYNONYM);
-	CPPUNIT_ASSERT(arg1.value == "a");
-	CPPUNIT_ASSERT(arg1.syn.type == ASSIGN);
-	CPPUNIT_ASSERT(arg1.syn.value == "a");
+	CPPUNIT_ASSERT(arg1.value == "v");
+	CPPUNIT_ASSERT(arg1.syn.type == VARIABLE);
+	CPPUNIT_ASSERT(arg1.syn.value == "v");
+	CPPUNIT_ASSERT(arg2.type == UNDERSCORE);
+	CPPUNIT_ASSERT(arg2.value == "_");
+	CPPUNIT_ASSERT(arg3.type == UNDERSCORE);
+	CPPUNIT_ASSERT(arg3.value == "_");
+
+	syn.value = "w";
+	syn.type = WHILE;
+	arg1.value = "\"x\"";
+	arg2.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 ) == true);
+	CPPUNIT_ASSERT(arg1.type == IDENT);
+	CPPUNIT_ASSERT(arg1.value == "\"x\"");
+	CPPUNIT_ASSERT(arg2.type == UNDERSCORE);
+	CPPUNIT_ASSERT(arg2.value == "_");
+
+	syn.value = "w";
+	syn.type = WHILE;
+	arg1.value = "v";
+	arg2.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 ) == true);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "v");
+	CPPUNIT_ASSERT(arg1.syn.type == VARIABLE);
+	CPPUNIT_ASSERT(arg1.syn.value == "v");
+	CPPUNIT_ASSERT(arg2.type == UNDERSCORE);
+	CPPUNIT_ASSERT(arg2.value == "_");
+	
+	//invalid
+	//synonym is not declared
+	syn.value = "ifstat1";
+	syn.type = IF;
+	arg1.value = "\"x\"";
+	arg2.value = "_";
+	arg3.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == false);
+
+	//synonym type is not IF
+	syn.value = "ifstat";
+	syn.type = ASSIGN;
+	arg1.value = "\"x\"";
+	arg2.value = "_";
+	arg3.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == false);
+	
+	syn.value = "a";
+	syn.type = ASSIGN;
+	arg1.value = "\"x\"";
+	arg2.value = "_";
+	arg3.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == false);
+	
+	//first argument is not IDENT
+	syn.value = "ifstat";
+	syn.type = IF;
+	arg1.value = "a";
+	arg2.value = "_";
+	arg3.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == false);
+	
+	//first argument is not IDENT
+	syn.value = "ifstat";
+	syn.type = IF;
+	arg1.value = 5;
+	arg2.value = "_";
+	arg3.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == false);
+
+	//second argument is not _
+	syn.value = "ifstat";
+	syn.type = IF;
+	arg1.value = "\"abc\"";
+	arg2.value = "a";
+	arg3.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == false);
+
+	//third argument is not _
+	syn.value = "ifstat";
+	syn.type = IF;
+	arg1.value = "\"abc\"";
+	arg2.value = "_";
+	arg3.value = "a";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == false);
+
+	//check second and third arg
 
 
-	std::string lhs = "#";
-	std::string rhs = "s.stmt#";
-	Argument arg1, arg2, arg3;
-	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == true);
-	CPPUNIT_ASSERT(arg1.type == SYNONYM);
-	CPPUNIT_ASSERT(arg1.value == "a");
-	CPPUNIT_ASSERT(arg1.syn.type == ASSIGN);
-	CPPUNIT_ASSERT(arg1.syn.value == "a");
+
+	//
+
+
 }
 
 
@@ -1661,6 +1826,233 @@ void QueryPreProcessorTest::ValidateWithTest()
 	lhs = "n.stmt#";
 	rhs = "5";
 	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+}
+
+void QueryPreProcessorTest::TokenizeExpressionTest()
+{
+	QueryPreProcessor qp;
+
+	std::vector<std::string> tokens , correctResult;
+	std::string delim = "+-*()";
+	std::string exp = "x";
+	correctResult.push_back("x");
+
+	qp.TokenizeExpression(exp , tokens , delim);
+
+	for(int i=0; i<tokens.size(); ++i)
+	{
+		std::cout << tokens[i]  << "\n";
+	}
+
+	//qp.TokenizeExpression(exp , tokens , delim);
+	CPPUNIT_ASSERT(tokens.size() == 1);
+	for(int i=0; i<tokens.size(); ++i)
+	{
+		//std::cout << tokens[i] << " = " << correctResult[i] << "\n";
+		CPPUNIT_ASSERT(tokens[i] == correctResult[i]);
+	}
 
 
+	tokens.clear(); 
+	correctResult.clear();
+	exp = "x+y";
+	correctResult.push_back("x");
+	correctResult.push_back("+");
+	correctResult.push_back("y");
+
+	qp.TokenizeExpression(exp , tokens , delim);
+
+	/*for(int i=0; i<tokens.size(); ++i)
+	{
+		std::cout << tokens[i]  << "\n";
+	}*/
+
+	//qp.TokenizeExpression(exp , tokens , delim);
+	CPPUNIT_ASSERT(tokens.size() == correctResult.size());
+	for(int i=0; i<tokens.size(); ++i)
+	{
+		//std::cout << tokens[i] << " = " << correctResult[i] << "\n";
+		CPPUNIT_ASSERT(tokens[i] == correctResult[i]);
+	}
+
+
+	tokens.clear(); 
+	correctResult.clear();
+	exp = "x+y*z";
+	correctResult.push_back("x");
+	correctResult.push_back("+");
+	correctResult.push_back("y");
+	correctResult.push_back("*");
+	correctResult.push_back("z");
+
+	qp.TokenizeExpression(exp , tokens , delim);
+
+	/*for(int i=0; i<tokens.size(); ++i)
+	{
+		std::cout << tokens[i]  << "\n";
+	}*/
+
+	//qp.TokenizeExpression(exp , tokens , delim);
+	CPPUNIT_ASSERT(tokens.size() == correctResult.size());
+	for(int i=0; i<tokens.size(); ++i)
+	{
+		//std::cout << tokens[i] << " = " << correctResult[i] << "\n";
+		CPPUNIT_ASSERT(tokens[i] == correctResult[i]);
+	}
+
+
+	tokens.clear(); 
+	correctResult.clear();
+	exp = "(x+y)*z";
+	correctResult.push_back("(");
+	correctResult.push_back("x");
+	correctResult.push_back("+");
+	correctResult.push_back("y");
+	correctResult.push_back(")");
+	correctResult.push_back("*");
+	correctResult.push_back("z");
+
+	qp.TokenizeExpression(exp , tokens , delim);
+
+	/*for(int i=0; i<tokens.size(); ++i)
+	{
+		std::cout << tokens[i]  << "\n";
+	}*/
+
+	//qp.TokenizeExpression(exp , tokens , delim);
+	CPPUNIT_ASSERT(tokens.size() == correctResult.size());
+	for(int i=0; i<tokens.size(); ++i)
+	{
+		//std::cout << tokens[i] << " = " << correctResult[i] << "\n";
+		CPPUNIT_ASSERT(tokens[i] == correctResult[i]);
+	}
+
+
+
+	tokens.clear(); 
+	correctResult.clear();
+	exp = "x*(y-z)";
+	
+	correctResult.push_back("x");
+	correctResult.push_back("*");
+	correctResult.push_back("(");
+	correctResult.push_back("y");
+	correctResult.push_back("-");
+	correctResult.push_back("z");
+	correctResult.push_back(")");
+
+	qp.TokenizeExpression(exp , tokens , delim);
+
+	/*for(int i=0; i<tokens.size(); ++i)
+	{
+		std::cout << tokens[i]  << "\n";
+	}*/
+
+	//qp.TokenizeExpression(exp , tokens , delim);
+	CPPUNIT_ASSERT(tokens.size() == correctResult.size());
+	for(int i=0; i<tokens.size(); ++i)
+	{
+		//std::cout << tokens[i] << " = " << correctResult[i] << "\n";
+		CPPUNIT_ASSERT(tokens[i] == correctResult[i]);
+	}
+
+}
+
+void QueryPreProcessorTest::IsValidExpressionTest()
+{
+	QueryPreProcessor qp;
+	std::vector<std::string> exp;
+	exp.push_back("x");
+
+	CPPUNIT_ASSERT(qp.IsValidExpression(exp) == true);
+
+	exp.clear();
+	exp.push_back("x");
+	exp.push_back("+");
+	exp.push_back("y");
+
+	CPPUNIT_ASSERT(qp.IsValidExpression(exp) == true);
+
+
+	exp.clear();
+	exp.push_back("x");
+	exp.push_back("+");
+	exp.push_back("y");
+	exp.push_back("*");
+	exp.push_back("z");
+
+	CPPUNIT_ASSERT(qp.IsValidExpression(exp) == true);
+
+
+	//(x+y)*z
+	exp.clear();
+	exp.push_back("(");
+	exp.push_back("x");
+	exp.push_back("+");
+	exp.push_back("y");
+	exp.push_back(")");
+	exp.push_back("*");
+	exp.push_back("z");
+
+	CPPUNIT_ASSERT(qp.IsValidExpression(exp , 0 , 4) == true);
+
+	exp.clear();
+	exp.push_back("x");
+	exp.push_back("+");
+	exp.push_back("(");
+	exp.push_back("y");
+	exp.push_back("*");
+	exp.push_back("z");
+	exp.push_back(")");
+
+	CPPUNIT_ASSERT(qp.IsValidExpression(exp , 2 , 6) == true);
+
+
+	exp.clear();
+	exp.push_back("x");
+	exp.push_back("+");
+	exp.push_back("(");
+	exp.push_back("y");
+	exp.push_back("*");
+	exp.push_back("z");
+	exp.push_back(")");
+	exp.push_back("+");
+	exp.push_back("a");
+
+	CPPUNIT_ASSERT(qp.IsValidExpression(exp , 2 , 6) == true);
+
+
+	exp.clear();
+	exp.push_back("x");
+	exp.push_back("+");
+	exp.push_back("(");
+	exp.push_back("x");
+	exp.push_back("+");
+	exp.push_back("(");
+	exp.push_back("y");
+	exp.push_back("*");
+	exp.push_back("z");
+	exp.push_back(")");
+	exp.push_back(")");
+	exp.push_back("+");
+	exp.push_back("a");
+
+	CPPUNIT_ASSERT(qp.IsValidExpression(exp , 2 , 10) == true);
+
+}
+
+void QueryPreProcessorTest::IsExpressionTest()
+{
+	QueryPreProcessor qp;
+	std::string exp;
+
+	exp = "\"(x+y)*z\"";
+	CPPUNIT_ASSERT(qp.IsExpression(exp) == true);
+
+
+	exp = "\"(a-b+(x+y))*z\"";
+	CPPUNIT_ASSERT(qp.IsExpression(exp) == true);
+
+	exp = "\"x\"";
+	CPPUNIT_ASSERT(qp.IsExpression(exp) == true);
 }

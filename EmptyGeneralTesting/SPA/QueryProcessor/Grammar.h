@@ -31,7 +31,7 @@ enum SynonymType {
 	STMT,
 	WHILE,
 	IF,
-	CALL,		//for parser, not query
+	CALL,		
 	VARIABLE,
 	CONSTANT,
 	PROCEDURE,

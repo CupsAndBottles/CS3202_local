@@ -13,8 +13,8 @@ typedef unsigned long long ULL;
 //#define DEBUG_MSG_VALIDATEQUERY
 //#define DEBUG_MSG_ISVALIDATTRREF
 //#define DEBUG_MSG_VALIDATERELATIONSHIP
-//#define DEBUG_MSG_VALIDATEPATTERN
-#define DEBUG_MSG_VALIDATEWITH
+#define DEBUG_MSG_VALIDATEPATTERN
+//#define DEBUG_MSG_VALIDATEWITH
 
 
 class QueryPreProcessor
@@ -39,6 +39,7 @@ protected:
 	static const std::string rel[];
 		
 	bool Tokenize(std::string, std::vector<std::string>&);
+	void TokenizeExpression(std::string exp, std::vector<std::string> &token, std::string &delim);
 
 	//Validate Clause
 	bool ValidateDeclaration(Synonym&, std::string);
@@ -53,6 +54,7 @@ protected:
 	bool IsExpression(std::string);
 	bool IsIdent(std::string);
 	bool IsName(std::string);
+	bool IsOperator(std::string s);
 
 	//string matching
 	bool IsDeclaration(std::string);
@@ -76,6 +78,7 @@ protected:
 	AttrNameType GetEnumAttrNameType(std::string type);
 
 	bool IsValidAttrRef(std::string rhs , Synonym& syn , AttrNameType& attrN);
+	bool IsValidExpression(std::vector<std::string>& exp , int prevOpenBracket = -1, int prevCloseBracket = -1);
 
 	void DebugMessage(std::string msg);
 	void DebugMessage(std::string msg , FUNCTION);
