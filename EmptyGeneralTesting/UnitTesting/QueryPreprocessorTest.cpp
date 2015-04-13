@@ -178,6 +178,10 @@ void QueryPreProcessorTest::TokenizeTest()
 
 	int size = tokenList.size();
 
+	cout << "\n" << size << "\n";
+	for(std::vector<std::string>::iterator it = tokenList.begin(); it!=tokenList.end(); ++it)
+		cout << *it << "\n";
+
 	CPPUNIT_ASSERT(size == 13);
 	CPPUNIT_ASSERT(tokenList.at(0) == "assign");
 	CPPUNIT_ASSERT(tokenList.at(1) == "a");
@@ -195,14 +199,14 @@ void QueryPreProcessorTest::TokenizeTest()
 
 
 	tokenList.clear();
-	query = "stmt s;Select s such that Parent(s,_)";
+	query = "stmt s;Select s such that Parent(s,_ )";
 
 	qv.Tokenize(query,tokenList);
 
 	size = tokenList.size();
-	/*cout << "\n" << size << "\n";
+	cout << "\n" << size << "\n";
 	for(std::vector<std::string>::iterator it = tokenList.begin(); it!=tokenList.end(); ++it)
-		cout << *it << "\n";*/
+		cout << *it << "\n";
 
 	CPPUNIT_ASSERT(size == 10);
 	CPPUNIT_ASSERT(tokenList.at(0) == "stmt");
@@ -215,6 +219,54 @@ void QueryPreProcessorTest::TokenizeTest()
 	CPPUNIT_ASSERT(tokenList.at(7) == "Parent");
 	CPPUNIT_ASSERT(tokenList.at(8) == "s");
 	CPPUNIT_ASSERT(tokenList.at(9) == "_");
+
+	tokenList.clear();
+	query = "stmt s;Select s such that Parent(_,_ ) pattern a(\"x\" , \" (x + y)* z\")";
+
+	qv.Tokenize(query,tokenList);
+
+	size = tokenList.size();
+	cout << "\n" << size << "\n";
+	for(std::vector<std::string>::iterator it = tokenList.begin(); it!=tokenList.end(); ++it)
+		cout << *it << "\n";
+
+	CPPUNIT_ASSERT(size == 14);
+	CPPUNIT_ASSERT(tokenList.at(0) == "stmt");
+	CPPUNIT_ASSERT(tokenList.at(1) == "s");
+	CPPUNIT_ASSERT(tokenList.at(2) == ";");
+	CPPUNIT_ASSERT(tokenList.at(3) == "Select");
+	CPPUNIT_ASSERT(tokenList.at(4) == "s");
+	CPPUNIT_ASSERT(tokenList.at(5) == "such");
+	CPPUNIT_ASSERT(tokenList.at(6) == "that");
+	CPPUNIT_ASSERT(tokenList.at(7) == "Parent");
+	CPPUNIT_ASSERT(tokenList.at(8) == "_");
+	CPPUNIT_ASSERT(tokenList.at(9) == "_");
+	CPPUNIT_ASSERT(tokenList.at(10) == "pattern");
+	CPPUNIT_ASSERT(tokenList.at(11) == "a");
+	CPPUNIT_ASSERT(tokenList.at(12) == "\"x\"");
+	CPPUNIT_ASSERT(tokenList.at(13) == "\" (x + y)* z\"");
+
+	tokenList.clear();
+	query = "stmt s###; Select s pattern a44 (\"x123\" , _ \" (f - ( x + y )) * z\") _";
+
+	qv.Tokenize(query,tokenList);
+
+	size = tokenList.size();
+	cout << "\n" << size << "\n";
+	for(std::vector<std::string>::iterator it = tokenList.begin(); it!=tokenList.end(); ++it)
+		cout << *it << "\n";
+
+	CPPUNIT_ASSERT(size == 9);
+	CPPUNIT_ASSERT(tokenList.at(0) == "stmt");
+	CPPUNIT_ASSERT(tokenList.at(1) == "s###");
+	CPPUNIT_ASSERT(tokenList.at(2) == ";");
+	CPPUNIT_ASSERT(tokenList.at(3) == "Select");
+	CPPUNIT_ASSERT(tokenList.at(4) == "s");
+	CPPUNIT_ASSERT(tokenList.at(5) == "pattern");
+	CPPUNIT_ASSERT(tokenList.at(6) == "a44");
+	CPPUNIT_ASSERT(tokenList.at(7) == "\"x123\"");
+	CPPUNIT_ASSERT(tokenList.at(8) == "_ \" (f - ( x + y )) * z\") _");
+
 
 
 	tokenList.clear();
@@ -290,6 +342,43 @@ void QueryPreProcessorTest::TokenizeTest()
 	CPPUNIT_ASSERT(tokenList.at(16) == "_\"y+5\"_");
 
 
+		
+	tokenList.clear();
+	query = "assign a;Select a";
+
+	//tokenize query
+	qv.Tokenize(query,tokenList);
+
+	size = tokenList.size();
+	CPPUNIT_ASSERT(size == 5);
+	CPPUNIT_ASSERT(tokenList.at(0) == "assign");
+	CPPUNIT_ASSERT(tokenList.at(1) == "a");
+	CPPUNIT_ASSERT(tokenList.at(2) == ";");
+	CPPUNIT_ASSERT(tokenList.at(3) == "Select");
+	CPPUNIT_ASSERT(tokenList.at(4) == "a");
+
+
+	tokenList.clear();
+	query = "assign a1,a2,a3;Select <a1,a2,a3>";
+
+	//tokenize query
+	qv.Tokenize(query,tokenList);
+
+	size = tokenList.size();
+	CPPUNIT_ASSERT(size == 11);
+	CPPUNIT_ASSERT(tokenList.at(0) == "assign");
+	CPPUNIT_ASSERT(tokenList.at(1) == "a1");
+	CPPUNIT_ASSERT(tokenList.at(2) == "a2");
+	CPPUNIT_ASSERT(tokenList.at(3) == "a3");
+	CPPUNIT_ASSERT(tokenList.at(4) == ";");
+	CPPUNIT_ASSERT(tokenList.at(5) == "Select");
+	CPPUNIT_ASSERT(tokenList.at(6) == "<");
+	CPPUNIT_ASSERT(tokenList.at(7) == "a1");
+	CPPUNIT_ASSERT(tokenList.at(8) == "a2");
+	CPPUNIT_ASSERT(tokenList.at(9) == "a3");
+	CPPUNIT_ASSERT(tokenList.at(10) == ">");
+
+
 	tokenList.clear();
 	query = "assign a  ; while w , w1 ;  variable v  ;  Select w such that Modifies( 3 , w1 ) pattern a( \"  y  \"  , _ \" y + 5  \" _)";
 
@@ -319,6 +408,104 @@ void QueryPreProcessorTest::TokenizeTest()
 	CPPUNIT_ASSERT(tokenList.at(18) == "a");
 	CPPUNIT_ASSERT(tokenList.at(19) == "\"  y  \"");
 	CPPUNIT_ASSERT(tokenList.at(20) == "_ \" y + 5  \" _");
+
+	tokenList.clear();
+	std::stringstream ss;
+	ss << "assign a  ,a2; while w , w1 ;  variable v  ; if i ";
+	ss << "Select <a, w,v> such that Modifies( 3 , \"x\" ) and Affect*( n ,a2) ";
+	ss << "pattern a( \"  y  \"  , _ \" y *5 -7 \" _) and pattern i(\"y\",_,_) and pattern w(_,_) ";
+	ss << "with a.stmt# = a2.stmt# and c.value = 5 and v.varName = \"lol\" p.procName = v.varName and n = 5;";
+	std::cout << ss;
+	query = ss.str();
+
+	qv.Tokenize(query,tokenList);
+
+	std::vector<std::string> correctList;
+	correctList.push_back("assign"); 
+	correctList.push_back("a"); 
+	correctList.push_back("a2"); 
+	correctList.push_back(";"); 
+	correctList.push_back("while"); 
+	correctList.push_back("w");  
+	correctList.push_back("w1"); 
+	correctList.push_back(";"); 
+	correctList.push_back("variable"); 
+	correctList.push_back("v"); 
+	correctList.push_back(";"); 
+	correctList.push_back("if"); 
+	correctList.push_back("i"); 
+
+	//ss << "Select <a, w,v> such that Modifies( 3 , \"x\" ) and Affect*( n ,a2) ";
+	correctList.push_back("Select"); 
+	correctList.push_back("<"); 
+	correctList.push_back("a"); 
+	correctList.push_back("w"); 
+	correctList.push_back("v"); 
+	correctList.push_back(">"); 
+	correctList.push_back("such"); 
+	correctList.push_back("that"); 
+	correctList.push_back("Modifies"); 
+	correctList.push_back("3"); 
+	correctList.push_back("\"x\""); 
+	correctList.push_back("and"); 
+	correctList.push_back("Affect*"); 
+	correctList.push_back("n"); 
+	correctList.push_back("a2"); 
+	
+	//ss << "pattern a( \"  y  \"  , _ \" y + 5  \" _) and pattern i(\"y\",_,_) and pattern w(_,_) ";
+	correctList.push_back("pattern"); 
+	correctList.push_back("a"); 
+	correctList.push_back("\"  y  \""); 
+	correctList.push_back("_ \" y *5 -7 \" _"); 
+	correctList.push_back("and"); 
+	correctList.push_back("pattern"); 
+	correctList.push_back("i"); 
+	correctList.push_back("\"y\""); 
+	correctList.push_back("_"); 
+	correctList.push_back("_"); 
+	correctList.push_back("and"); 
+	correctList.push_back("pattern"); 
+	correctList.push_back("w"); 
+	correctList.push_back("_"); 
+	correctList.push_back("_"); 
+
+	//ss << "with a.stmt# = a2.stmt# and c.value = 5 and v.varName = \"lol\" p.procName = v.varName and n = 5;";
+	correctList.push_back("with"); 
+	correctList.push_back("a.stmt#"); 
+	correctList.push_back("="); 
+	correctList.push_back("a2.stmt#"); 
+	correctList.push_back("and"); 
+	correctList.push_back("c.value"); 
+	correctList.push_back("="); 
+	correctList.push_back("5"); 
+	correctList.push_back("and"); 
+	correctList.push_back("v.varName"); 
+	correctList.push_back("="); 
+	correctList.push_back("\"lol\""); 
+	correctList.push_back("p.procName"); 
+	correctList.push_back("=");
+	correctList.push_back("v.varName"); 
+	correctList.push_back("and"); 
+	correctList.push_back("n");
+	correctList.push_back("="); 
+	correctList.push_back("5"); 
+	correctList.push_back(";"); 
+
+	std::cout << "tokenList size: " << tokenList.size() << "\n";
+	std::cout << "correctList size: " << correctList.size() << "\n";
+
+
+/*	for(int i=0; i<tokenList.size(); ++i) {
+		//std::cout << "Testing " << tokenList[i] << " and " << correctList[i] << "\n";
+		std::cout << tokenList[i] << "\n";
+	}*/
+
+	CPPUNIT_ASSERT(tokenList.size() == correctList.size());
+
+	for(int i=0; i<tokenList.size(); ++i) {
+		std::cout << "Testing " << tokenList[i] << " and " << correctList[i] << "\n";
+		CPPUNIT_ASSERT(tokenList[i] == correctList[i]);
+	}
 }
 
 void QueryPreProcessorTest::ClauseValidationTest()

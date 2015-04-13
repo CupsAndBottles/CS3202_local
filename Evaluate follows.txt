@@ -1,0 +1,104 @@
+-initialize suchThatResult to empty vector
+-get arg1SynType and arg2SynType and selectSynType
+-get arg1Value and arg2Value and SelectValue
+
+
+Case 1: Synonym,Synonym
+	- if syn1type == syn2type, return false
+	
+	- if syn1 == selectSyn
+		- get all statements of type syn1
+		- for each statement, GetChildrenOf(syn1)
+		- for each child in children vector, if there exist a type = syn2type, push back statement to suchThat result, break
+		- if suchthat result is empty, return false, otherwise true
+
+	-else if syn2 == selectSyn
+		- get all statements of type syn2
+		- for each statement, GetParentOf(syn2)
+		- if CheckIfStmtOfType(parent,syn1.type) true, push back statement to suchThat result
+		- if suchthat result is empty, return false, otherwise true
+
+	-else	//check either parent or children		
+		- get all statements of type syn1
+		- for each statement, GetChildrenOf(syn1)
+		- for each child in children vector, if there exist a type = syn2type, return true
+		- return false
+
+Case 2: Synonym,_ 
+	- get all statements of type syn1
+	- for each statement GetChildrenOf(syn1)
+	- if children vector is not empty, push back statement to temp result
+	- if syn1 == selectSyn, assign temp result to suchThat result
+	- if temp result is empty, return false, otherwise true
+
+Case 3: _,Synonym
+	- get all statements of type syn2
+	- for each statement GetParentOf(syn2)
+	- if parent != -1, push back statement to temp result
+	- if syn2 == selectSyn, assign temp result to suchThat result
+	- if temp result is empty, return false, otherwise true
+
+Case 4: Synonym,Integer
+	- get all statements of type Syn1
+	- for each statement, check IsParent(Syn1,Int2)
+	- if true, push back statement to temp result,
+	- if syn1 == selectSyn, assign temp result to suchThat result
+	- if temp result is empty, return false, otherwise true
+
+Case 5: Integer,Synonym
+	- get all statements of type Syn2
+	- for each statement, check IsParent(Int1,Syn2)
+	- if true, push back statement to temp result,
+	- if syn2 == selectSyn, assign temp result to suchThat result
+	- if temp result is empty, return false, otherwise true
+
+Case 6: _._
+	- return HasAnyParent()
+
+Case 7: _,Integer 
+	- if(GetParentOf(Int2)) == -1, return false, otherwise true
+
+Case 8: Integer,_
+	- if GetChildrenOf(Int1) vector is empty, return false, otherwise true
+
+Case 9: Integer,Integer
+	- return IsParent(Int1,Int2)
+
+`	`
+
+
+
+
+Case 1: Synonym,Synonym
+	select s such that Parent(s,s)	in both
+	select w such that Parent(w,a)	in 
+	select a such that Parent(w,a)	in 
+	select a such that Parent(w,s)	not in
+
+Case 2: Synonym,_
+	select w such that Parent(w,_)	in
+	select a such that Parent(w,_)	not in
+
+Case 3: _,Synonym
+	select a such that Parent(_,a)	in
+	select a such that Parent(_,s)	not in
+
+Case 4: Synonym,Integer
+	select w such that Parent(w,5)	in
+	select a such that Parent(w,4)	not in
+
+Case 5: Integer,Synonym
+	select a such that Parent(5,a)	in
+	select a such that Parent(4,s)	not in
+
+Case 6: _._
+	select a such that Parent(_,_)	not in
+
+case 7: _,Integer
+	select a such that Parent(_,5)	not in
+
+case 8: Integer,_
+	select a such that Parent(4,_)	not in
+
+case 9: Integer,Integer
+	select a such that Parent(4,9) 	notin

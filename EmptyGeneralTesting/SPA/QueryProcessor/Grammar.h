@@ -31,6 +31,7 @@ enum SynonymType {
 	STMT,
 	WHILE,
 	IF,
+	CALL,		//for parser, not query
 	VARIABLE,
 	CONSTANT,
 	PROCEDURE,
@@ -38,6 +39,13 @@ enum SynonymType {
 	BOOLEAN,
 	INVALID_SYNONYM_TYPE
 };
+
+enum AttrName {
+	STMTNUM,
+	VALUE,
+	PROCNAME,
+	VARNAME
+}
 
 enum ClauseType {
 	DECLARATION,

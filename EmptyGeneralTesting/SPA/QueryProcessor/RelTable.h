@@ -44,10 +44,31 @@ private:
 	static const SynonymType s1_follows[];
 	static const SynonymType s2_follows[];
 
+	//calls argument rules
+	static const ArgumentType a1_calls[];
+	static const ArgumentType a2_calls[];
+	static const SynonymType s1_calls[];
+	static const SynonymType s2_calls[];
+
+	//next argument rules
+	static const ArgumentType a1_next[];
+	static const ArgumentType a2_next[];
+	static const SynonymType s1_next[];
+	static const SynonymType s2_next[];
+
+	//affects argument rules
+	static const ArgumentType a1_affects[];
+	static const ArgumentType a2_affects[];
+	static const SynonymType s1_affects[];
+	static const SynonymType s2_affects[];
+
 	//individual relationship
 	static const Relationship modifiesTable;	//Modifies and Uses share same table
 	static const Relationship parentTable;
 	static const Relationship followsTable;
+	static const Relationship callsTable;
+	static const Relationship nextTable;
+	static const Relationship affectsTable;
 
 	//table for relationships
 	static const std::map<RelationshipType,Relationship> relationshipTable;

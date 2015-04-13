@@ -5,6 +5,9 @@
 #include "RelTable.h"
 #include "..\..\AutoTester\source\AbstractWrapper.h"
 
+//#define DEBUG_MSG_TOKENIZER
+//#define DEBUG_MSG_VALIDATEQUERY
+
 const std::string QueryPreProcessor::de[] = {"stmt", "assign", "while", "if", "variable", "procedure", "prog_line", "constant"};
 const std::string QueryPreProcessor::rel[] = {"Modifies", "Uses", "Parent", "Parent*", "Follows", "Follows*", "Calls", "Calls*", "Next", "Next*", "Affects", "Affects*"};
  
@@ -14,9 +17,8 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 {
 	std::vector<std::string> tokenList;
 	std::string token;
-	std::string delim = " ,();";
 
-	//std::cout << "Before tokenize\n";
+	DebugMessage("Before tokenize\n" , VALIDATEQUERY);
 
 	//tokenize query
 	if(!Tokenize(query,tokenList)) {
@@ -24,22 +26,25 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 		return false;
 	}
 
-	//std::cout << "AFter tokenize\n";
+	DebugMessage("After tokenize\n" , VALIDATEQUERY);
 
+	//get the first token iterator
 	std::vector<std::string>::iterator it = tokenList.begin();
 	token = *it;
-	//std::cout << "token: " << token << "\n";
-	//validate declaration
-	while(IsDeclaration(token))	//if token is design entity
-	{
-		//assign a;while w;Select a
 
-		//std::cout << "\nIn declaration\n";
+	DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
+
+	//validate declaration
+	while(IsDeclaration(token))	
+	{
+		DebugMessage("\nIn declaration\n" , VALIDATEQUERY);
+
 		std::string type = token;
 
 		if(++it == tokenList.end())	return false;
 		token = *it;
-		//std::cout << "token: " << token << "\n";
+
+		DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 		//get the synonym
 		while(!IsSemiColon(token))
@@ -50,7 +55,8 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 			}
 
 			else {
-				//std::cout << "\nIn Check Semicolon\n";
+				DebugMessage("\nIn Check Semicolon\n" , VALIDATEQUERY);
+
 				Synonym synonym;
 				synonym.value = token;
 
@@ -62,20 +68,22 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 
 				if(++it == tokenList.end())	return false;
 				token = *it;
-				//std::cout << "token: " << token << "\n";
 			}
+
+			DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 		}
-		//std::cout << "\nAfer Check Semicolon\n";
+		DebugMessage("\nAfer Check Semicolon\n" , VALIDATEQUERY);
 
 		if(++it == tokenList.end())	return false;
 		token = *it;
-		//std::cout << "token: " << token << "\n";
+		DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 	}
 
-	//std::cout << "\nafter declaration\n";
+	DebugMessage("\nAfer declaration\n" , VALIDATEQUERY);
 
 	//check if declaration is empty
-	if(queryData.GetDeclarations().empty()) {
+	if(queryData.GetSizeOfClause(DECLARATION) == 0)	
+	{
 		std::cout << "Invalid Query: No declaration.\n";
 		return false;
 	}
@@ -85,18 +93,20 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 	//check if next token is select, and validate select
 	if(IsSelect(token))
 	{
-		//std::cout << "\nIn Select\n";
-		if(++it == tokenList.end())	{//std::cout << "\nno more token\n";
-			return false;
-		}
+		DebugMessage("\nIn Select\n" , VALIDATEQUERY);
+
+		if(++it == tokenList.end())	return false;
 		token = *it;
-		//std::cout << "token: " << token << "\n";
+		DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 		//select <a,w,v>
 		if(IsOpenBracket(token))
 		{
+			DebugMessage("\nIn <\n" , VALIDATEQUERY);
+
 			if(++it == tokenList.end())	return false;
 			token = *it;
+			DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 			while(!IsCloseBracket(token))
 			{
@@ -108,15 +118,22 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 
 				if(++it == tokenList.end())	return false;
 				token = *it;
+				DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 			}
 
 			//if no data in selectclause
-			if(queryData.GetSizeOfClause(SELECT) == 0)	return false;
+			if(queryData.GetSizeOfClause(SELECT) == 0)	
+			{
+				std::cout << "Invalid Query: No synonym in Select<>\n";
+				return false;
+			}
 		}
 
 		//Select BOOLEAN
 		else if(IsBoolean(token))
 		{
+			DebugMessage("\nIn BOOLEAN\n" , VALIDATEQUERY);
+
 			Synonym synonym;
 			synonym.type = BOOLEAN;
 			synonym.value = "BOOLEAN";
@@ -124,10 +141,10 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 			queryData.InsertSelect(synonym);
 		}
 		
-
 		//select a
 		else
 		{
+			DebugMessage("\nIn normal Select\n" , VALIDATEQUERY);
 			Synonym synonym;
 			synonym.value = token;
 
@@ -138,13 +155,18 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 	}
 
 	//no select
-	else return false;
+	else 
+	{
+		std::cout << "Invalid Query: No select\n";
+		return false;
+	}
 
 	if(AbstractWrapper::GlobalStop)	return false;
 
 	//get next token
 	if(++it == tokenList.end())	return true;
 	token = *it;
+	DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 	//validate such that, pattern
 	while(IsSuchThat(token) || IsPattern(token) || IsWith(token)) 
@@ -152,31 +174,64 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 		bool endOfQuery = false, hasSuchThat = false, hasPattern = false, hasWith = false;
 		bool repeat = false;	//repeat after AND
 
-		//such that ... and such that ... will not work
-		while(IsSuchThat(token) || repeat)	//such that 
+		while(IsSuchThat(token) || repeat)	
 		{
+			DebugMessage("\nIn such that\n" , VALIDATEQUERY);
+
+			//First time such that
 			if(!repeat)
 			{
+				DebugMessage("\nIn ignore \"that\"\n" , VALIDATEQUERY);
 				if(++it == tokenList.end())	return false;	//ignore "that"
+				if(*it != "that") return false;		//must be "that"
 				token = *it;
+				DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
+			}
+
+			//and ...
+			else
+			{
+				//and such that or and Modifies(), to check which, peek into it + 1, but don't ++it
+				//if it + 1 = tokenList.end() return false
+				//if it + 1 is such, ++it 2 times and check for tokenlist.end
+				//if it + 1 is not such, then do nothing
+				std::vector<std::string>::iterator nextIter = it + 1;
+				if(nextIter == tokenList.end()) return false;
+
+				if(IsSuchThat(*nextIter))
+				{
+					DebugMessage("\nIn ignore \"that\"\n" , VALIDATEQUERY);
+
+					if(++it == tokenList.end()) return false;
+					DebugMessage(std::string("tokens: " + *it + "\n") , VALIDATEQUERY);
+					if(*it != "such") return false;		//must be "such"
+
+					if(++it == tokenList.end()) return false;
+					DebugMessage(std::string("tokens: " + *it + "\n") , VALIDATEQUERY);
+					if(*it != "that") return false;		//must be "that"
+				}
 			}
 
 			if(++it == tokenList.end())	return false;	//get RelationshipType
 			token = *it;
+			DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 			Argument arg1, arg2;
 
 			if(IsRelationship(token)) //uses, modifies, parents, etc.
 			{
+				DebugMessage("\nIn relationship\n" , VALIDATEQUERY);
 				std::string rel = token;			
 
 				if(++it == tokenList.end())	return false;	//get arg1
 				token = *it;
 				arg1.value = token;
+				DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 				if(++it == tokenList.end())	return false;	//get arg2
 				token = *it;
 				arg2.value = token;
+				DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 				RelationshipType rel_enum;
 
@@ -189,6 +244,7 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 
 			if(++it == tokenList.end())	return true;
 			else token = *it;
+			DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 			if(IsAnd(token))	repeat = true;
 			else				repeat = false;
@@ -203,28 +259,50 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 			//pattern if("x",_,_)
 			//pattern w("w",_)
 
+			DebugMessage("\nIn pattern\n" , VALIDATEQUERY);
+
+			//and pattern a(_,_) / and w(_,_)
+			if(repeat)
+			{
+				std::vector<std::string>::iterator nextIter = it + 1;
+				if(nextIter == tokenList.end()) return false;
+
+				if(IsPattern(*nextIter))
+				{
+					DebugMessage("\n++it from and to pattern\n" , VALIDATEQUERY);
+					if(++it == tokenList.end()) return false;
+					token = *it;
+					DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
+				}
+			}
+
 			Argument arg1, arg2;
 			Synonym synonym;
 
 			if(++it == tokenList.end())	return false;	//get type
 			token = *it;
 			synonym.value = token;
+			DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 			if(++it == tokenList.end())	return false;	//get arg1
 			token = *it;
 			arg1.value = token;
+			DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 			if(++it == tokenList.end())	return false;	//get arg2
 			token = *it;
 			arg2.value = token;
-
+			DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
 
 			//get the type of synonym
 			if(!QueryData::IsSynonymExist(synonym.value, synonym.type)) return false;
 			
 			if(synonym.type == IF)
 			{
+				DebugMessage("\nIn if\n" , VALIDATEQUERY);
+
 				if(++it == tokenList.end())	return false;	//get arg3 and ignore it, since it must be _
+				DebugMessage(std::string("tokens: " + *it + "\n") , VALIDATEQUERY);
 				Argument arg3;
 				arg3.value = *it;
 				
@@ -234,6 +312,7 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 			
 			else if(synonym.type == WHILE || synonym.type == ASSIGN)
 			{
+				DebugMessage("\nIn while/assign\n" , VALIDATEQUERY);
 				if(!ValidatePattern(synonym, arg1, arg2))	return false;
 				queryData.InsertPattern(synonym, arg1, arg2);
 			}
@@ -245,6 +324,7 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 
 			if(++it == tokenList.end())	return true;
 			else token = *it;
+			DebugMessage(std::string("tokens: " + *it + "\n") , VALIDATEQUERY);
 
 			if(IsAnd(token))	repeat = true;
 			else				repeat = false;
@@ -253,21 +333,49 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 		}
 
 		while(IsWith(token) || repeat)	//with or and
-		{		
+		{	
+			DebugMessage("\nIn with\n" , VALIDATEQUERY);
+
+			//and with a=b / and a=b
+			if(repeat)
+			{
+				std::vector<std::string>::iterator nextIter = it + 1;
+				if(nextIter == tokenList.end()) return false;
+
+				if(IsWith(*nextIter))
+				{
+					DebugMessage("\n++it from and to with\n" , VALIDATEQUERY);
+					if(++it == tokenList.end()) return false;
+					token = *it;
+					DebugMessage(std::string("tokens: " + token + "\n") , VALIDATEQUERY);
+				}
+			}
+
 			Argument arg1, arg2;
+			std::string lhs, rhs;
 
 			if(++it == tokenList.end())	return false;	//get arg1
 			token = *it;
-			arg1.value = token;
-			
+			lhs = token;
+			DebugMessage(std::string("tokens: " + *it + "\n") , VALIDATEQUERY);
+
+			//ok when tokenize, a.stmt# is 1 token, dont separarate a . stmt#, when validateWith only check
+			//get first arg token, then get next token must be =
+			//then get get next token
+			//then validatewith with this 2 token
+			//e.g. token 1 = a.stmt# ,token 2 = "x" , then in validatewith only separate them and check
+
+
 			//skip "="
 			if(++it == tokenList.end())	return false;	
-			if(*it != "=") return false;
+			DebugMessage(std::string("tokens: " + *it + "\n") , VALIDATEQUERY);
+			if(!IsEqual(*it)) return false;
 
 			if(++it == tokenList.end())	return false;	//get arg2
-			arg2.value = *it;
+			DebugMessage(std::string("tokens: " + *it + "\n") , VALIDATEQUERY);
+			rhs = *it;
 
-			if(!ValidateWith(arg1, arg2))	return false;
+			if(!ValidateWith(arg1, arg2, lhs, rhs))	return false;
 			queryData.InsertWith(arg1, arg2);
 
 			if(++it == tokenList.end())	return true;
@@ -302,209 +410,6 @@ void QueryPreProcessor::Tokenize(std::string str, std::vector<std::string> &toke
 	}
 }
 
-bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &tokens) {
-	bool isIdent = false, isExpression = false, isProgLine = false;
-
-	query += " ";	//add a whitespace behind, to handle case like assign a;Select a, if not the a will not get push back
-
-	for (unsigned int pos = 0; pos < query.length(); pos++) { // loop through string
-		char currentChar = query[pos];
-		static std::string integer = "";
-		static std::string alphaString = "";
-
-
-		//std::cout << "char[" << pos << "] : " << currentChar << "\n";
-
-		if (currentChar >= 48 && currentChar <= 57) { // integer
-			//std::cout << "In Integer\n";
-			if (alphaString == "") {
-				integer = integer + currentChar;
-			} else {
-				alphaString = alphaString + currentChar;
-			}
-
-		} else if ((currentChar >= 65 && currentChar <= 90) ||
-				   (currentChar >= 97 && currentChar <= 122)) { // alpha
-			
-					   //std::cout << "In alphabet\n";
-			if (integer != "") {
-				//throw (std::string) "Invalid idenitifier.";
-				return false;
-			} else {
-				alphaString = alphaString + currentChar;
-			}
-
-		} else { // symbol, whitespace or endline
-			//std::cout << "In Others\n";
-			if (integer != "") { // previous substring is integer
-				tokens.push_back(integer);
-				integer = "";
-			} 
-			else if (alphaString != "") { // previous substring is... string
-				if(alphaString == "prog") 
-					isProgLine = true;
-
-				else if(currentChar == '*') {
-					tokens.push_back(alphaString+"*");
-					alphaString = "";
-				}
-	
-				//if string begins with " or _ which means an expression or IDENT, do not push back
-				else if(!(alphaString.at(0) == '"' || alphaString.at(0) == '_'))
-				{
-					tokens.push_back(alphaString);
-					alphaString = "";
-				}
-			}
-
-			/*
-			( - ignore
-			) - ignore
-			, - ignore
-			; - push back
-			" - push back
-			_ - push back
-			*/
-			//if is ( or ) or , just ignore
-			if (currentChar == '(' || currentChar == ')') {
-				if(currentChar == ')'){
-					if(alphaString != "") {	//handle _, e.g. Parent(w,_)
-						tokens.push_back(alphaString);
-						alphaString = "";
-						isExpression = false;
-						isIdent = false;
-					}
-					else continue;
-				}
-
-				else continue;
-			}
-
-			else if(currentChar == ',') {
-				//std::cout << "In ,\n";
-				if(isExpression)	//current string start with underscore, push back the first char
-				{
-					//std::cout << "In isExpression\n";
-					std::string cs(1,alphaString.at(0));
-					tokens.push_back(cs);
-					isExpression = false;
-					alphaString = "";
-				}
-
-				else continue;
-			}
-
-			//if is white space, depends on previous string
-			else if (currentChar == '	' || currentChar == '\r' || currentChar == '\n' || currentChar == ' ') {
-				//std::cout << "In space\n";
-				//if previous string is not empty means it is an expression or IDENT " x " , " x + y " , _ " x + 5 " _ or just _ 
-				//if former case, do not ignore white space
-				//if latter case, pushback tokens
-
-				if (alphaString != "")
-					alphaString += currentChar;
-				
-				//if previous string is empty, ignore whitespace
-				else continue;
-			} 
-			else {
-				if(currentChar == ';')
-				{
-					//std::cout << "In ;\n";
-					//push back tokens
-					tokens.push_back(";");
-				}
-				else if(currentChar == '"')
-				{
-					//std::cout << "In \"\n";
-					//if alphastring is empty, add to alphastring
-					//else if alphastring is not empty, check if first char is either " or _, if yes add to alphastring and push back, clear alphastring
-					//else return false
-
-					if(alphaString == "") {
-						//std::cout << "In empty string\n";
-						alphaString += currentChar;
-						isIdent = true;
-					}
-
-					else {
-						if(isIdent) {
-							//std::cout << "In isIdent \"\n";
-							alphaString += currentChar;
-							tokens.push_back(alphaString);
-							alphaString = "";
-							isIdent = false;
-						}
-
-						else if(isExpression) {
-							//std::cout << "In isExpression\n";
-							alphaString += currentChar;
-						}
-
-						else {
-							//std::cout << "Whaaa??\n";
-							return false;
-						}
-					}
-				}
-
-				else if(currentChar == '_')
-				{
-					//std::cout << "In _\n";
-					if(alphaString == "") {
-						//std::cout << "In empty string\n";
-						alphaString += currentChar;
-						isExpression = true;
-					}
-
-					else {
-						if(isExpression) {
-							//std::cout << "In isExpression\n";
-							alphaString += currentChar;
-							tokens.push_back(alphaString);
-							alphaString = "";
-							isExpression = false;
-						}
-						else if(isProgLine) {
-							alphaString += currentChar;
-							isProgLine = false;
-						}
-						else {
-							std::cout << "Whaaa??\n";
-							return false;
-						}
-					}
-				}
-
-				else if(currentChar == '+') 
-				{
-					//std::cout << "In +\n";
-					if(isExpression) {
-						//std::cout << "In isExpression\n";
-						alphaString += currentChar;
-					}
-
-					else {
-						std::cout << "Invalid character +\n";
-						return false;
-					}
-				}
-
-				else if(currentChar == '*') {}
-
-				else {
-					std::cout << "Invalid character.\n";
-					return false;
-				}
-			}
-		}
-
-		//std::cout << "fine\n";
-	}
-
-	return true;
-}
-
 /*
 - Check if there is any duplicated synonym in declaration. E.g. assign a1; while a1;
 - Design entities allowed in declaration are stmt, assign, while, if, variable, constant, procedure, prog_line, call
@@ -525,7 +430,7 @@ bool QueryPreProcessor::ValidateDeclaration(Synonym &synonym, std::string type)
 	}
 
 	//Design entity must be one of the following
-	const SynonymType list[] = {ASSIGN, STMT, WHILE, VARIABLE, CONSTANT, PROG_LINE};
+	const SynonymType list[] = {ASSIGN, STMT, WHILE, IF, PROCEDURE, VARIABLE, CONSTANT, PROG_LINE};
 	std::vector<SynonymType> list_vec(list, list + sizeof(list) / sizeof(list[0]));
 
 	if(std::find(list_vec.begin(), list_vec.end(), synonym.type) != list_vec.end())
@@ -550,9 +455,6 @@ bool QueryPreProcessor::ValidateSelect(Synonym &synonym)
 	}
 }
 
-/*
-f
-*/
 bool QueryPreProcessor::ValidatePattern(Synonym synonym, Argument &arg1, Argument &arg2)
 {
 	if(synonym.type == ASSIGN)
@@ -746,13 +648,48 @@ bool QueryPreProcessor::ValidateRelationship(std::string rel, RelationshipType &
 	}
 }
 
-bool QueryPreProcessor::ValidateWith(Argument& arg1, Argument& arg2)
+bool QueryPreProcessor::ValidateWith(Argument& arg1, Argument& arg2, std::string lhs, std::string rhs)
 {
+	//verify synonym has the correct attrRef
+	//a.value ccannot, a.procname cannot
+	//lhs can be a.stmt# , c.value , p.procName , v.varName , n
+	//rhs can be a.stmt# , c.value , p.procName , v.varName , "ident" , 5
+	
+	//first check what is lhs, must be _._ or a delared n
 
+	//if IsAttrRef(lhs, syn, attrName) 
+	//	arg1.type = SYNONYM, arg1.value = syn.value, arg1.syn = syn
+	//	if attrName = stmt# || attrName == value
+	//		if IsInteger(rhs)	arg2.type = INTEGER arg2.value = rhs
+	//		else if IsAttrRef(rhs,syn,attrname)	if(attrName == stmt# || attrName == value) arg2.type = SYNONYM, .value =syn.value .syn = syn
+	//		else return false
+	//	else if attrName = varName || attrName == procName
+	//		if IsIdent(rhs)	arg2.type = IDENT arg2.value = rhs
+	//		else if IsAttrRef(rhs,syn,attrname)	if(attrName == varname || attrName == procName) arg2.type = SYNONYM, .value =syn.value .syn = syn
+	//		else return false
+
+	//else if IsSynonymExist(lhs,PROG_LINE)
+	//	if isInteger(rhs)	arg2.type = INTEGER arg2.value = rhs
+	//	else if isValidAttrRef(rhs , syn , attrName) if(attrName == stmt# || attrName == value) arg2.type = SYNONYM, .value =syn.value .syn = syn	no need to store attrName, if its valid here then it doesnt matter in evaluation, not gonna use it
+	//	else return false
+
+	//else return false
+
+
+
+	//isValidAttrRef() will tokenize and check whether syn is declared, and whether syn has correct attrRef, then return it
 
 	return false;
 }
 
+bool QueryPreProcessor::IsValidAttrRef(std::string attrRef , Synonym& syn , AttrName& attrName)
+{
+	//tokenize rhs by .
+	//check tokens, size = 3, middle is dot
+	//check is syn declared, if not return false
+	//if yes assign to syn
+
+}
 
 
 
@@ -764,6 +701,10 @@ factor : NAME | INTEGER
 assume whitespace hasn't been remove
 " x ", _ " x + y" _ are also valid
 assume _ and " " is included, e.g. _"x"_
+
+can include () in expression
+assume the expression is valid, does not check for things like _"x++y**z"_ , "()x+-y" etc, this need check 1 char at a time
+and push ( on a stack, pop when reach )
 */
 bool QueryPreProcessor::IsExpression(std::string str)
 {
@@ -773,9 +714,6 @@ bool QueryPreProcessor::IsExpression(std::string str)
 	//eliminates " " or _" "_ and get the content
 	//if(str.at(0) == '\"' && str.at(str.length()-1) == '\"')		//"..."
 	//	str = str.substr(1, str.length()-2);
-
-	//str.length() must > 4? _""_
-	if(str.length() < 5)	return false;
 
 	if (str.at(0) == '_' && str.at(str.length()-1) == '_')	//_..._
 	{
@@ -788,15 +726,21 @@ bool QueryPreProcessor::IsExpression(std::string str)
 		else return false;
 	}
 
+	else if(str.at(0) == '\"' && str.at(str.length()-1) == '\"')	//"..."
+	{
+		int length = str.length() - 4;
+		str = str.substr(2, length);
+	}
+
 	else return false;
 
 	std::vector<std::string> tokenList;
-	std::string delim = "+";
+	std::string delim = "+-*()";
 
 	Tokenize(str, tokenList, delim);
 
 	for(std::vector<std::string>::iterator it = tokenList.begin(); it != tokenList.end(); ++it) {
-		if(!(IsName(*it) || IsInteger(*it)))
+		if(!(IsIdent(*it) || IsInteger(*it)))
 			return false;
 	}
 	
@@ -873,7 +817,6 @@ bool QueryPreProcessor::GetEnumSynonymType(std::string type, SynonymType &enumTy
 	else if(type == "constant")		enumType = CONSTANT;
 	else if(type == "if")			enumType = IF;
 	else if(type == "procedure")	enumType = PROCEDURE;
-	else if(type == "call")			enumType = CALL;
 	else if(type == "BOOLEAN")		enumType = BOOLEAN;
 	else return false;
 
@@ -933,6 +876,18 @@ bool QueryPreProcessor::IsPattern(std::string str)
 bool QueryPreProcessor::IsUnderscore(std::string str)
 {
 	if(str == "_")	return true;
+	return false;
+}
+
+bool QueryPreProcessor::IsDot(std::string str)
+{
+	if(str == ".")	return true;
+	return false;
+}
+
+bool QueryPreProcessor::IsEqual(std::string str)
+{
+	if(str == "=")	return true;
 	return false;
 }
 
@@ -1011,9 +966,9 @@ bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &to
 		static std::string integer = "";
 		static std::string alphaString = "";
 
-		//std::cout << "char[" << pos << "] : " << currentChar << "\n";
+		DebugMessage(std::string("char[" + std::to_string(long long(pos)) + "] : " + currentChar + "\n") , TOKENIZER);
 
-		//integer
+		//integer 0-9
 		if (currentChar >= 48 && currentChar <= 57) 
 		{
 			//std::cout << "In Integer\n";
@@ -1021,16 +976,17 @@ bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &to
 			else					alphaString = alphaString + currentChar;	//the integer belong to part of a string
 		} 
 		
-		//character
-		else if ((currentChar >= 65 && currentChar <= 90) || (currentChar >= 97 && currentChar <= 122)) 
+		//character A-Z | a-z | # | .
+		else if ((currentChar >= 65 && currentChar <= 90) || (currentChar >= 97 && currentChar <= 122) || (currentChar == 35)) 
 		{
 			//std::cout << "In alphabet\n";
 			if (integer != "")	return false;	//should not happen
 			else				alphaString = alphaString + currentChar;
 		} 
 		
+		// symbol, whitespace or endline
 		else 
-		{ // symbol, whitespace or endline
+		{ 
 			//std::cout << "In Others\n";
 			//push back integer/string first 
 			if (integer != "") 
@@ -1041,6 +997,9 @@ bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &to
 
 			else if (alphaString != "") 
 			{ 
+				//only those that need to push together with alphastring like stmt#, affects* need to be here
+				//or need to set some shit like isProgLine
+
 				//prog_line, wait for _ , don't push
 				if(alphaString == "prog") 
 					isProgLine = true;
@@ -1048,11 +1007,27 @@ bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &to
 				//Parent*/Next* etc
 				else if(currentChar == '*') 
 				{
-					tokens.push_back(alphaString+"*");
-					alphaString = "";
-					continue;
+					//* can be Affects* or in the middle of an expression _"x*y"_
+					if(isExpression || isIdent)
+					{
+						alphaString += currentChar;
+						isIdent = false;
+						continue;
+					}
+
+					else
+					{
+						tokens.push_back(alphaString+"*");
+						alphaString = "";
+						continue;
+					}
 				}
-	
+
+				else if(currentChar == '.')
+				{
+					alphaString += currentChar;
+				}
+
 				//if string begins with " or _ which means an expression or IDENT, don't push
 				else if(!(alphaString.at(0) == '"' || alphaString.at(0) == '_'))
 				{
@@ -1061,37 +1036,107 @@ bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &to
 				}
 			}
 
-			/*
-			( - ignore
-			) - ignore
-			, - ignore
-			; - push back
-			" - push back
-			_ - push back
-			*/
-			//if is ( or ) or , just ignore
+		//if it is ( , just ignore
+			//if it is ) and has string before it, push that string, else ignore
 			if (currentChar == '(' || currentChar == ')') 
 			{
-				if(currentChar == ')')
+				//Parent(w,_), the underscore will set isExpression to true
+				//"(x+y)*z"
+			
+				DebugMessage("In ()\n" , TOKENIZER);
+				//handle _, e.g. Parent(w,_)
+				//ACHTUNGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+				//IN ORDER TO SUPPORT BOTH (A,_  ) AND _"(X+Y)*Z"_ / "(X+Y)*Z"
+				//if(isExpression)
+				//find " from the end of alphastring, if no " is found, that means not an expression, just underscore
+				//in that case remove any white space, then push the _ back, reset, continue
+				//if a * is found, then its an expression
+				//alphaString += currentChar, continue
+
+				//ALSO, PUT ALL KIND OF SPACE IN THE QUERY IN UNIT TEST, ALL KIND OF GANINSZZZZZZZ
+
+
+				//for (, only need check whether its in expression
+				//for ), need check after _ or in expression
+					
+			
+				if(isExpression)
 				{
-					if(alphaString != "")
-					{	//handle _, e.g. Parent(w,_)
-						tokens.push_back(alphaString);
-						alphaString = "";
-						isExpression = false;
-						isIdent = false;
+					//just concatenate with alphastring
+					if(currentChar == '(')
+					{
+						alphaString += currentChar;
+						//should set isIdent to false since ident cannot have (
 					}
-					else continue;
+
+					else
+					{
+						//find " from the end of alphastring, if no " is found, that means not an expression, just underscore
+						//in that case remove any white space, then push the _ back, reset, continue
+						//if a * is found, then its an expression
+						//alphaString += currentChar, continue
+						std::size_t found = alphaString.find_first_of("\"");
+						//found, _"(
+						if (found!=std::string::npos)
+						{
+							alphaString += currentChar;
+						}
+						//not found, (a,_  )
+						else
+						{
+							tokens.push_back("_");
+							alphaString = "";
+							isExpression = false;
+							isIdent = false;
+							//should set isIdent to false since ident cannot have (
+						}
+
+					}
 				}
 
-				else continue;
+				//normal (), push back string before ( and )
+				else
+				{
+					if(currentChar == ')')
+					{
+						if(alphaString != "")
+						{	
+							tokens.push_back(alphaString);
+							alphaString = "";
+						}
+						else continue;
+					}
+				}			
+				
+			}	
+			
+			else if(currentChar == '=')
+			{
+				DebugMessage("In =\n" , TOKENIZER);
+				tokens.push_back("=");
+			}	
+
+			else if(currentChar == '<')
+			{
+				DebugMessage("In <\n" , TOKENIZER);
+				tokens.push_back("<");
 			}
 
-			else if(currentChar == ',') {
-				//std::cout << "In ,\n";
-				if(isExpression)	//current string start with underscore, push back the first char
+			else if(currentChar == '>')
+			{
+				DebugMessage("In >\n" , TOKENIZER);
+				tokens.push_back(">");
+			}
+
+			else if(currentChar == ',') 
+			{
+				DebugMessage("In ,\n" , TOKENIZER);
+
+				//this means before , is a _ , so it cannot be an expression, just push the underscore, which is the first char of the string
+				if(isExpression)	
 				{
-					//std::cout << "In isExpression\n";
+					DebugMessage("In isExpression\n" , TOKENIZER);
+
 					std::string cs(1,alphaString.at(0));
 					tokens.push_back(cs);
 					isExpression = false;
@@ -1103,11 +1148,13 @@ bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &to
 
 			//if is white space, depends on previous string
 			else if (currentChar == '	' || currentChar == '\r' || currentChar == '\n' || currentChar == ' ') {
-				//std::cout << "In space\n";
+				DebugMessage("In white space\n" , TOKENIZER);
+
 				//if previous string is not empty means it is an expression or IDENT " x " , " x + y " , _ " x + 5 " _ or just _ 
 				//if former case, do not ignore white space
 				//if latter case, pushback tokens
 
+				//situation like (a,_ ), just += whitespace with _, let ) do the work
 				if (alphaString != "")
 					alphaString += currentChar;
 				
@@ -1115,103 +1162,160 @@ bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &to
 				else continue;
 			} 
 
-			else {
-				if(currentChar == ';')
-				{
-					//std::cout << "In ;\n";
-					tokens.push_back(";");
+			else if(currentChar == ';')
+			{
+				DebugMessage("In ;\n" , TOKENIZER);
+				tokens.push_back(";");
+			}
+
+			else if(currentChar == '"')
+			{
+				DebugMessage("In \"\n" , TOKENIZER);
+
+				//if alphastring is empty, add to alphastring
+				//else if alphastring is not empty, check if first char is either " or _, if yes add to alphastring and push back, clear alphastring
+				//else return false
+
+				//when encounter a " , we dont know its an expression or ident, can be  "x+y" or "x"
+				//so set both isIdent and isExpression to true
+				//when encounter integer or name, if any of them is true dont push
+				//when we encounter the first operator +/-/*, set isIdent to false
+				//when encounter the second ", if isIdent is still true, then it is an ident
+				//push, and turn both flag to false
+				//if isident is false when encounter second ", then it is expression (coz operator switch off the flag)
+				//check if first char is _, if yes dont push, wait for second_, if no then push, reset everything
+
+				//beginning of an IDENT or EXP, add to current string
+				if(alphaString == "") {
+					DebugMessage("In empty string\n" , TOKENIZER);
+
+					alphaString += currentChar;
+					isIdent = true;
+					isExpression = true;
 				}
 
-				else if(currentChar == '"')
-				{
-					//std::cout << "In \"\n";
-					//if alphastring is empty, add to alphastring
-					//else if alphastring is not empty, check if first char is either " or _, if yes add to alphastring and push back, clear alphastring
-					//else return false
 
-					if(alphaString == "") {
-						//std::cout << "In empty string\n";
+				//I dont know if "x" can be an expression like pattern a("x","y"), now I assume cannot
+				//only _"x"_ , _"x+y"_, "x+y"
+
+				//end of an IDENT or EXP, or middle of an EXP just before _
+				else {
+					//"x" or "x*y"
+					if(isIdent) {
+						DebugMessage("In isIdent\n" , TOKENIZER);
+
 						alphaString += currentChar;
-						isIdent = true;
+						tokens.push_back(alphaString);
+						alphaString = "";
+						isIdent = false;
+						isExpression = false;
 					}
 
-					else {
-						if(isIdent) {
-							//std::cout << "In isIdent \"\n";
+					//_"x + y"_
+					else if(isExpression) {
+						DebugMessage("In isExpression\n" , TOKENIZER);
+						
+						//_"x+y"_
+						if(alphaString[0] == '_')
+						{
+							alphaString += currentChar;
+						}
+						//"x+y"
+						else 
+						{
 							alphaString += currentChar;
 							tokens.push_back(alphaString);
 							alphaString = "";
 							isIdent = false;
-						}
-
-						else if(isExpression) {
-							//std::cout << "In isExpression\n";
-							alphaString += currentChar;
-						}
-
-						else {
-							//std::cout << "Whaaa??\n";
-							return false;
-						}
-					}
-				}
-
-				else if(currentChar == '_')
-				{
-					//std::cout << "In _\n";
-					//start of an expression
-					if(alphaString == "") {
-						//std::cout << "In empty string\n";
-						alphaString += currentChar;
-						isExpression = true;
-					}
-
-					else {
-						//end of an expression
-						if(isExpression) {
-							//std::cout << "In isExpression\n";
-							alphaString += currentChar;
-							tokens.push_back(alphaString);
-							alphaString = "";
 							isExpression = false;
 						}
-						//prog_
-						else if(isProgLine) {
-							alphaString += currentChar;
-							isProgLine = false;
-						}
-						else {
-							std::cout << "Whaaa??\n";
-							return false;
-						}
-					}
-				}
-
-				//+ can only occur in an expression
-				else if(currentChar == '+') 
-				{
-					//std::cout << "In +\n";
-					//part of an expression
-					if(isExpression) {
-						//std::cout << "In isExpression\n";
-						alphaString += currentChar;
 					}
 
+					//Mordor, one does not simply walk into here
 					else {
-						std::cout << "Invalid character +\n";
+						DebugMessage("One does not simply walk into here\n" , TOKENIZER);
 						return false;
 					}
 				}
+			}
+
+			else if(currentChar == '_')
+			{
+				DebugMessage("In _\n" , TOKENIZER);
+
+				//no string before _ means start of an expression or just an underscore
+				if(alphaString == "") {
+					DebugMessage("In empty string\n" , TOKENIZER);
+
+					alphaString += currentChar;
+					isExpression = true;
+				}
+
+				//end of an expression
+				else {
+					if(isExpression) {
+						DebugMessage("In isExpression\n" , TOKENIZER);
+
+						alphaString += currentChar;
+						tokens.push_back(alphaString);
+						alphaString = "";
+						isExpression = false;
+					}
+					//prog_
+					else if(isProgLine) {
+						DebugMessage("In isProgLine\n" , TOKENIZER);
+						alphaString += currentChar;
+						isProgLine = false;
+					}
+					else {
+						DebugMessage("There is character before _ but !isProgLine and !isExpression\n" , TOKENIZER);
+						return false;
+					}
+				}
+			}
+
+			//+ - * can only occur in an expression
+			else if(currentChar == '+' || currentChar == '-') 
+			{
+				std::stringstream ss;
+				ss << "In " << currentChar << "\n";
+				DebugMessage(ss.str() , TOKENIZER);
+
+				//part of an expression
+				if(isExpression || isIdent) {
+					DebugMessage("In isExpression\n" , TOKENIZER);
+					alphaString += currentChar;
+					isIdent = false;
+				}
 
 				else {
-					std::cout << "Invalid character.\n";
+					std::cout << "Invalid character " << std::string(1,currentChar) << "\n";
 					return false;
 				}
 			}
 		}
 
-		//std::cout << "fine\n";
+		DebugMessage("End of checking current character\n" , TOKENIZER);
 	}
 
 	return true;
+}
+
+void QueryPreProcessor::DebugMessage(std::string msg , FUNCTION function)
+{
+	if(function == TOKENIZER)
+	{
+		#ifdef DEBUG_MSG_TOKENIZER
+			std::cout << msg;
+		#endif
+	}
+
+	else if(function == VALIDATEQUERY)
+	{
+		#ifdef DEBUG_MSG_VALIDATEQUERY
+			std::cout << msg;
+		#endif
+	}
+
+	
 }

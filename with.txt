@@ -1,0 +1,71 @@
+With
+
+procedure p,q;
+assign a, a2;
+stmt s;
+prog_line n;
+while w; 
+if i;
+variable v, v2;
+constant c;
+
+p.procName = "p"
+p.procName = q.procName
+p.procName = v.varname
+
+v.varName = "x"
+v.varName = v2.varName
+v.varName = p.procName
+
+a.stmt# = 5
+a.stmt# = a2.stmt#
+a.stmt# = s.stmt# // check if s is a valid a before assigning
+a.stmt# = c.value //When evaluating, check whether c value is a valid assignment statement	
+//a.stmt# = n
+a.stmt# = w.stmt# and i.stmt# is valid although doesnt make sense?
+//When evaluating, if a = w or a = i, a will be empty
+
+s.stmt# = 5
+s.stmt# = a.stmt#
+s.stmt# = s2.stmt#
+s.stmt# = w.stmt#
+s.stmt# = i.stmt#
+s.stmt# = c.value
+s.stmt# = n
+
+i.stmt# = 5
+i.stmt# = s.stmt#
+i.stmt# = i2.stmt#
+i.stmt# = c.value
+i.stmt# = n
+
+w.stmt# = 5
+w.stmt# = s.stmt#
+w.stmt# = w2.stmt#
+w.stmt# = c.value
+w.stmt# = n
+
+c.value = 5
+c.value = a.stmt#
+c.value = s.stmt#
+c.value = w.stmt#
+c.value = i.stmt#
+c.value = c2.value
+c.value = n
+
+n = 5
+n = a.stmt#
+n = s.stmt#
+n = i.stmt#
+n = w.stmt#
+n = c.value
+n = n2
+
+
+
+Calls(p,q)
+Calls(p,"proc2")
+Calls("proc1",q)
+Calls("proc1","proc2")
+
+
