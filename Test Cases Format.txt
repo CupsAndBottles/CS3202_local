@@ -1,0 +1,147 @@
+assign a, a1, a2; 
+while w, w1, w2; 
+stmt s, s1, s2; 
+prog_line n, n1, n2; 
+variable v, v1, v2;
+
+Modifies/Uses
+return a subset
+Select a such that Modifies(a, v)
+Select a such that Modifies(a, "x")
+Select a such that Modifies(a, _)
+Select v such that Modifies(a, v)
+
+Select w such that Modifies(w, v)
+Select w such that Modifies(w, "x")
+Select w such that Modifies(w, _)
+Select v such that Modifies(w, v)
+
+Select s such that Modifies(s, v)
+Select s such that Modifies(s, "x")
+Select s such that Modifies(s, _)
+Select v such that Modifies(s, v)
+
+Select n such that Modifies(n, v)
+Select n such that Modifies(n, "x")
+Select n such that Modifies(n, _)
+Select v such that Modifies(n, v)
+
+Select v such that Modifies(5, v)
+
+return everything 
+Select w/s/n 	such that Modifies(a, v)
+Select w/s/n/v 	such that Modifies(a, "x")
+Select w/s/n/v 	such that Modifies(a, _)
+Select a/s/n 	such that Modifies(w, v)
+Select a/s/n/v 	such that Modifies(w, "x")
+Select a/s/n/v 	such that Modifies(w, _)
+Select a/w/n 	such that Modifies(s, v)
+Select a/w/n/v 	such that Modifies(s, "x")
+Select a/w/n/v 	such that Modifies(s, _)
+Select a/w/s 	such that Modifies(n, v)
+Select a/w/s/v 	such that Modifies(n, "x")
+Select a/w/s/v 	such that Modifies(n, _)
+Select a/w/s/n 	such that Modifies(5, v)
+Select a/w/s/n/v such that Modifies(5, "x")
+Select a/w/s/n/v such that Modifies(5, _)
+
+
+
+
+Follows/Follows*
+return a subset
+Select a1 such that Follows(a1, a2)
+Select a such that Follows(a, w)
+Select a such that Follows(a, s)
+Select a such that Follows(a, n)
+Select a such that Follows(a, 5)
+Select a such that Follows(a, _)
+Select a2 such that Follows(a1, a2)
+Select w such that Follows(a, w)
+Select s such that Follows(a, s)
+Select n such that Follows(a, n)
+
+Select w such that Follows(w, a)
+Select w1 such that Follows(w1, w2)
+Select w such that Follows(w, s)
+Select w such that Follows(w, n)
+Select w such that Follows(w, 5)
+Select w such that Follows(w, _)
+Select a such that Follows(w, a)
+Select w2 such that Follows(w1, w2)
+Select s such that Follows(w, s)
+Select n such that Follows(w, n)
+
+Select s such that Follows(s, a)
+Select s such that Follows(s, w)
+Select s1 such that Follows(s1, s2)
+Select s such that Follows(s, n)
+Select s such that Follows(s, 5)
+Select s such that Follows(s, _)
+Select a such that Follows(s, a)
+Select w such that Follows(s, w)
+Select s2 such that Follows(s1, s2)
+Select n such that Follows(s, n)
+
+Select n such that Follows(n, a)
+Select n such that Follows(n, w)
+Select n such that Follows(n, s)
+Select n1 such that Follows(n1, n2)
+Select n such that Follows(n, 5)
+Select n such that Follows(n, _)
+Select a such that Follows(n, a)
+Select w such that Follows(n, w)
+Select s such that Follows(n, s)
+Select n2 such that Follows(n1, n2)
+
+
+
+
+
+Parent/Parent*
+return a subset
+Select w such that Follows(w, a)
+Select w1 such that Follows(w1, w2)
+Select w such that Follows(w, s)
+Select w such that Follows(w, n)
+Select w such that Follows(w, 5)
+Select w such that Follows(w, _)
+Select a such that Follows(w, a)
+Select w2 such that Follows(w1, w2)
+Select s such that Follows(w, s)
+Select n such that Follows(w, n)
+
+Select s such that Follows(s, a)
+Select s such that Follows(s, w)
+Select s1 such that Follows(s1, s2)
+Select s such that Follows(s, n)
+Select s such that Follows(s, 5)
+Select s such that Follows(s, _)
+Select a such that Follows(s, a)
+Select w such that Follows(s, w)
+Select s2 such that Follows(s1, s2)
+Select n such that Follows(s, n)
+
+Select n such that Follows(n, a)
+Select n such that Follows(n, w)
+Select n such that Follows(n, s)
+Select n1 such that Follows(n1, n2)
+Select n such that Follows(n, 5)
+Select n such that Follows(n, _)
+Select a such that Follows(n, a)
+Select w such that Follows(n, w)
+Select s such that Follows(n, s)
+Select n2 such that Follows(n1, n2)
+
+
+
+
+Pattern
+Select a pattern a(v,_"x+y"_)
+Select a pattern a(v,_)
+Select v pattern a(v,_"x+y"_)
+Select v pattern a(v,_)
+Select a pattern a("x",_"x+y"_)
+Select a pattern a("x",_)
+Select a pattern a(_,_"x+y"_)
+Select a pattern a(_,_)

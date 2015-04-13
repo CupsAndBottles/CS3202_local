@@ -1,0 +1,404 @@
+1 - Get All Assignment Stmts
+assign a;
+Select a
+1, 2, 4, 6, 8, 9
+5000
+2 - Get All While Stmts
+while w;
+Select w
+3, 5, 7
+5000
+3 - Simple Modifies
+assign a;
+Select a such that Modifies (a, "x")
+1
+5000
+4 - Nested Modifies
+stmt s;
+Select s such that Modifies (s, "y")
+2, 3, 5, 6
+5000
+5 - Modifies tEst
+stmt s;
+Select s such that Modifies (s, "tEst")
+3, 4, 7, 8
+5000
+6 - Simple Uses
+assign a;
+Select a such that Uses (a, "b")
+9
+5000
+7 - Nested Uses
+stmt s;
+Select s such that Uses (s, "tEst")
+3, 5, 6, 7
+5000
+8 - Uses x
+stmt s;
+Select s such that Uses (s, "x")
+2, 3, 4, 5
+5000
+9 - Simple Follows
+assign a; while w;
+Select a such that Follows (a, w)
+2, 4
+5000
+10 - Follows Across Stmt Lists
+assign a; while w;
+Select a such that Follows (w, a)
+9
+5000
+11 - Follows 4
+stmt s;
+Select s such that Follows (4, s)
+5
+5000
+12 - Follows*
+assign a; while w;
+Select a such that Follows* (a, w)
+1, 2, 4
+5000
+13 - Follows* 1
+stmt s;
+Select s such that Follows* (1, s)
+2, 3
+5000
+14 - Follows* 6
+stmt s
+Select s such that Follows* (6, w)
+none
+5000
+15 - Simple Parent
+while w;
+Select w such that Parent (w, _)
+3, 5, 7
+5000
+16 - More Parent
+stmt s; while w;
+Select s such that Parent (s, w)
+3
+5000
+17 - Parent of 9
+while w;
+Select w such that Parent (w, 9)
+3
+5000
+18 - Parents*
+stmt s;
+Select s such that Parent* (s, _)
+3, 5, 7
+5000
+19 - Parented*
+stmt s;
+Select s such that Parent (_, s)
+4, 5, 6, 7, 8, 9
+5000
+20 - Parent* of 5
+stmt s;
+Select s such that Parent (s, 5)
+3
+5000
+21 - Simple LHS Patterns
+assign a;
+Select a pattern a ("y", _)
+2, 6
+5000
+22 - Simple RHS Patterns
+assign a;
+Select a pattern a (_,_"x"_)
+2, 4
+5000
+23 - Complex RHS Patterns
+assign a;
+Select a pattern a (_, _"x + 1"_)
+2
+5000
+24 - Pattern
+assign a;
+Select a pattern a ("y", _"newVar + tEst"_)
+6
+5000
+25 - Modifies tEst with Pattern
+assign a;
+Select a such that Modifies (a, "tEst") pattern a (_, _"z + x"_)
+4
+5000
+26 - Modifies newVar with Pattern
+assign a;
+Select a such that Modifies (a, "y") pattern a (_, _"tEst"_)
+6
+5000
+27 - Uses x with Pattern
+assign a;
+Select a such that Uses (a, "x") pattern a (_, _)
+2, 4
+5000
+28 - Uses z with Pattern
+assign a;
+Select a such that Uses (a, "z") pattern a ("tEst", _)
+4
+5000
+29 - Follows with Pattern
+assign a; while w;
+Select w such that Follows (a, w) pattern a (_, _"x + 1"_)
+3
+5000
+30 - Follows* with Pattern
+assign a;
+Select a such that Follows* (_, a) pattern a (_, _"x"_)
+2
+5000
+31 - Parent with Pattern
+while w; assign a;
+Select w such that Parent (w, a) pattern a ("tEst", _"0"_)
+7
+5000
+32 - Simple Parent with Pattern
+while w; assign a;
+Select w such that Parent (w, a) pattern a (_, _)
+3, 5, 7
+5000
+33 - Parent* with Pattern
+while w; assign a;
+Select w such that Parent* (w, a) pattern a ("y", _"newVar + tEst"_)
+3, 5
+5000
+34 - Parent* with LHS pattern
+while w; assign a;
+Select a such that Parent* (w, a) pattern a ("tEst", _)
+4, 8
+5000
+35 - Pattern
+assign a;variable v;
+Select v pattern a (v,_"z+x"_)
+tEst
+5000
+36 - Pattern
+assign a;variable v;
+Select v pattern a (v,_"newVar+tEst"_)
+y
+5000
+37 - Pattern
+assign a;variable v;
+Select v pattern a (v,_"1"_)
+x, y, tEst
+5000
+38 - Pattern
+assign a;variable v;
+Select a pattern a (v,_"1"_)
+1, 2, 4
+5000
+39 - Pattern
+assign a;
+Select a pattern a (_,_)
+1, 2, 4, 6, 8, 9
+5000
+40 - Pattern
+assign a;
+Select a pattern a ("y",_)
+2, 6
+5000
+41 - Pattern
+assign a;variable v;
+Select a pattern a ("tEst",_)
+4, 8
+5000
+42 - Pattern
+assign a;
+Select a pattern a ("b",_)
+none
+5000
+43 - Pattern
+assign a;variable v;
+Select v pattern a (v,_)
+x, y, tEst, a
+5000
+44 - Pattern
+assign a;variable v;
+Select a pattern a (v,_)
+1, 2, 4, 6, 8, 9
+5000
+45 - Pattern
+assign a;
+Select a pattern a (_,_"0"_)
+8
+5000
+46 - Pattern
+assign a;variable v;
+Select a pattern a (_,_"1"_)
+x = 1			//1
+y = x + 1		//2
+b = a + c		//3			
+c = 4			//4
+z = c + 10		//5
+tEst = z + x + 1	//7
+newVar = 5		//8
+y = newVar + tEst	//10
+tEst = a + x		//12
+newVar = newVar - 1	//13
+a = z + 8		//14
+tEst = 0		//16
+d = z + x		//17
+a = b + 2 + c		//18
+z = a + c -1		//19
+tEst = x + 1 * 2	//20
+b = z * c + 10		//22
+newVar = b * a + c	//23
+a = z + 8 * c		//25
+b = 0			//26
+c = s + a +c		//27
+
+
+
+
+
+1 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,v) pattern a(v,_"z+x"_)	
+7, 12, 16, 17, 20
+5000
+2 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,v) pattern a(v,_)		
+1, 2, 3, 4, 5, 7, 8, 10, 12, 13, 14, 16, 17, 18, 19, 20, 22, 23, 25, 26, 27
+5000
+3 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,v) pattern a("tEst",_"x"_)	
+7,12,20
+5000
+4 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,v) pattern a("b",_)	
+3, 22, 26
+5000
+5 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,v) pattern a(_,_"b*a"_)	
+23
+5000
+6 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,v) pattern a(_,_)
+1, 2, 3, 4, 5, 7, 8, 10, 12, 13, 14, 16, 17, 18, 19, 20, 22, 23, 25, 26, 27
+5000
+7 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,"tEst") pattern a(v,_"z+x"_)	
+7, 12, 16, 20
+5000
+8 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,"a") pattern a(v,_)		
+14, 18, 25
+5000
+9 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,"a") pattern a("a",_"c"_)	
+18, 25
+5000
+10 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,"c") pattern a("b",_)
+3, 22
+5000
+11 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,"y") pattern a(_,_"x+1"_)	
+2
+5000
+12 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,"c") pattern a(_,_)
+27
+5000
+13 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,_) pattern a(v,_"c+10"_)	
+5
+5000
+14 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,_) pattern a(v,_)	
+all a
+5000
+15 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,_) pattern a("newVar","b*a+c")
+23	
+5000
+16 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,_) pattern a("z",_)
+5, 19
+5000
+17 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,_) pattern a(_,_"z+8"_)
+14
+5000
+18 - Modifies and Pattern
+assign a;variable v;
+Select a such that Modifies(a,_) pattern a(_,_)	
+1, 2, 3, 4, 5, 7, 8, 10, 12, 13, 14, 16, 17, 18, 19, 20, 22, 23, 25, 26, 27
+5000
+19 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(a,v) pattern a(v,_"newVar"_)	
+newVar, y
+5000
+20 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(a,v) pattern a(v,_)	
+a, b, c, d, x, y, z, tEst, newVar
+5000
+21 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(a,v) pattern a("b","c")	
+b
+5000
+22 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(a,v) pattern a("a",_)	
+a
+5000
+23 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(a,v) pattern a(_,_"a+c"_)
+b, z
+5000
+24 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(a,v) pattern a(_,_)	
+a, b, c, d, x, y, z, tEst, newVar
+5000
+25 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(20,v) pattern a(v,_"1*2"_)	
+tEst
+5000
+26 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(5,v) pattern a(v,_)	
+z
+5000
+27 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(14,v) pattern a("tEst",_"z+x"_)	
+a
+5000
+28 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(5,v) pattern a("y",_)	
+z
+5000
+29 - Modifies and Pattern
+assign a;variable v;
+Select v such that Modifies(26,v) pattern a(_,_"z+x"_)
+b
+5000
+30 - Modifies and Pattern
+assign a;variable v;	
+Select v such that Modifies(27,v) pattern a(_,_)	
+c
+5000

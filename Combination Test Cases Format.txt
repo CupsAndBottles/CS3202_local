@@ -1,0 +1,43 @@
+assign a/w/s/n, a1, a2; 
+while w, w1, w2; 
+stmt s, s1, s2; 
+prog_line n, n1, n2; 
+variable v, v1, v2;
+
+Combination
+return a subset
+Select a/w/s/n such that Modifies(a/w/s/n, v) pattern a(v,_"x+y"_)
+Select a/w/s/n such that Modifies(a/w/s/n, v) pattern a(v,_)
+Select a/w/s/n such that Modifies(a/w/s/n, v) pattern a("x",_"x+y"_)
+Select a/w/s/n such that Modifies(a/w/s/n, v) pattern a("x",_)
+Select a/w/s/n such that Modifies(a/w/s/n, v) pattern a(_,_"x+y"_)
+Select a/w/s/n such that Modifies(a/w/s/n, v) pattern a(_,_)
+
+Select a/w/s/n such that Modifies(a/w/s/n, "x") pattern a(v,_"x+y"_)
+Select a/w/s/n such that Modifies(a/w/s/n, "x") pattern a(v,_)
+Select a/w/s/n such that Modifies(a/w/s/n, "x") pattern a("x",_"x+y"_)
+Select a/w/s/n such that Modifies(a/w/s/n, "x") pattern a("x",_)
+Select a/w/s/n such that Modifies(a/w/s/n, "x") pattern a(_,_"x+y"_)
+Select a/w/s/n such that Modifies(a/w/s/n, "x") pattern a(_,_)
+
+Select a/w/s/n such that Modifies(a/w/s/n, _) pattern a(v,_"x+y"_)
+Select a/w/s/n such that Modifies(a/w/s/n, _) pattern a(v,_)
+Select a/w/s/n such that Modifies(a/w/s/n, _) pattern a("x",_"x+y"_)
+Select a/w/s/n such that Modifies(a/w/s/n, _) pattern a("x",_)
+Select a/w/s/n such that Modifies(a/w/s/n, _) pattern a(_,_"x+y"_)
+Select a/w/s/n such that Modifies(a/w/s/n, _) pattern a(_,_)
+
+Select v such that Modifies(a/w/s/n, v) pattern a(v,_"x+y"_)
+Select v such that Modifies(a/w/s/n, v) pattern a(v,_)
+Select v such that Modifies(a/w/s/n, v) pattern a("x",_"x+y"_)
+Select v such that Modifies(a/w/s/n, v) pattern a("x",_)
+Select v such that Modifies(a/w/s/n, v) pattern a(_,_"x+y"_)
+Select v such that Modifies(a/w/s/n, v) pattern a(_,_)
+
+Select v such that Modifies(5, v) pattern a(v,_"x+y"_)
+Select v such that Modifies(5, v) pattern a(v,_)
+Select v such that Modifies(5, v) a("x",_"x+y"_)
+Select v such that Modifies(5, v) pattern a("x",_)
+Select v such that Modifies(5, v) pattern a(_,_"x+y"_)
+Select v such that Modifies(5, v) pattern a(_,_)
+
