@@ -178,9 +178,9 @@ void QueryPreProcessorTest::TokenizeTest()
 
 	int size = tokenList.size();
 
-	cout << "\n" << size << "\n";
+	/*cout << "\n" << size << "\n";
 	for(std::vector<std::string>::iterator it = tokenList.begin(); it!=tokenList.end(); ++it)
-		cout << *it << "\n";
+		cout << *it << "\n";*/
 
 	CPPUNIT_ASSERT(size == 13);
 	CPPUNIT_ASSERT(tokenList.at(0) == "assign");
@@ -204,9 +204,9 @@ void QueryPreProcessorTest::TokenizeTest()
 	qv.Tokenize(query,tokenList);
 
 	size = tokenList.size();
-	cout << "\n" << size << "\n";
+	/*cout << "\n" << size << "\n";
 	for(std::vector<std::string>::iterator it = tokenList.begin(); it!=tokenList.end(); ++it)
-		cout << *it << "\n";
+		cout << *it << "\n";*/
 
 	CPPUNIT_ASSERT(size == 10);
 	CPPUNIT_ASSERT(tokenList.at(0) == "stmt");
@@ -226,9 +226,9 @@ void QueryPreProcessorTest::TokenizeTest()
 	qv.Tokenize(query,tokenList);
 
 	size = tokenList.size();
-	cout << "\n" << size << "\n";
+	/*cout << "\n" << size << "\n";
 	for(std::vector<std::string>::iterator it = tokenList.begin(); it!=tokenList.end(); ++it)
-		cout << *it << "\n";
+		cout << *it << "\n";*/
 
 	CPPUNIT_ASSERT(size == 14);
 	CPPUNIT_ASSERT(tokenList.at(0) == "stmt");
@@ -252,9 +252,9 @@ void QueryPreProcessorTest::TokenizeTest()
 	qv.Tokenize(query,tokenList);
 
 	size = tokenList.size();
-	cout << "\n" << size << "\n";
+	/*cout << "\n" << size << "\n";
 	for(std::vector<std::string>::iterator it = tokenList.begin(); it!=tokenList.end(); ++it)
-		cout << *it << "\n";
+		cout << *it << "\n";*/
 
 	CPPUNIT_ASSERT(size == 9);
 	CPPUNIT_ASSERT(tokenList.at(0) == "stmt");
@@ -491,8 +491,8 @@ void QueryPreProcessorTest::TokenizeTest()
 	correctList.push_back("5"); 
 	correctList.push_back(";"); 
 
-	std::cout << "tokenList size: " << tokenList.size() << "\n";
-	std::cout << "correctList size: " << correctList.size() << "\n";
+	//std::cout << "tokenList size: " << tokenList.size() << "\n";
+	//std::cout << "correctList size: " << correctList.size() << "\n";
 
 
 /*	for(int i=0; i<tokenList.size(); ++i) {
@@ -503,7 +503,7 @@ void QueryPreProcessorTest::TokenizeTest()
 	CPPUNIT_ASSERT(tokenList.size() == correctList.size());
 
 	for(int i=0; i<tokenList.size(); ++i) {
-		std::cout << "Testing " << tokenList[i] << " and " << correctList[i] << "\n";
+		//std::cout << "Testing " << tokenList[i] << " and " << correctList[i] << "\n";
 		CPPUNIT_ASSERT(tokenList[i] == correctList[i]);
 	}
 }
@@ -1366,4 +1366,301 @@ void QueryPreProcessorTest::HelperFunctionTest()
 	exist = qv.GetEnumSynonymType("lol", st);
 	CPPUNIT_ASSERT(st == INVALID_SYNONYM_TYPE);
 	CPPUNIT_ASSERT(exist == false);
+
+
+
+
+
+
+	QueryData qd;
+	qd.ClearData();
+	qd.InsertDeclaration(Synonym("a",ASSIGN));
+	qd.InsertDeclaration(Synonym("w",WHILE));
+	qd.InsertDeclaration(Synonym("s",STMT));
+	qd.InsertDeclaration(Synonym("ifstat",IF));
+	qd.InsertDeclaration(Synonym("v",VARIABLE));
+	qd.InsertDeclaration(Synonym("p",PROCEDURE));
+	qd.InsertDeclaration(Synonym("c",CONSTANT));
+
+	//valid
+	std::string attrRef = "a.stmt#";
+	Synonym syn;
+	AttrNameType attrName;
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == true);
+	CPPUNIT_ASSERT(syn.value == "a");
+	CPPUNIT_ASSERT(syn.type == ASSIGN);
+	CPPUNIT_ASSERT(attrName == STMTNUM);
+
+	attrRef = "s.stmt#";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == true);
+	CPPUNIT_ASSERT(syn.value == "s");
+	CPPUNIT_ASSERT(syn.type == STMT);
+	CPPUNIT_ASSERT(attrName == STMTNUM);
+
+	attrRef = "w.stmt#";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == true);
+	CPPUNIT_ASSERT(syn.value == "w");
+	CPPUNIT_ASSERT(syn.type == WHILE);
+	CPPUNIT_ASSERT(attrName == STMTNUM);
+
+	attrRef = "ifstat.stmt#";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == true);
+	CPPUNIT_ASSERT(syn.value == "ifstat");
+	CPPUNIT_ASSERT(syn.type == IF);
+	CPPUNIT_ASSERT(attrName == STMTNUM);
+
+	attrRef = "v.varName";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == true);
+	CPPUNIT_ASSERT(syn.value == "v");
+	CPPUNIT_ASSERT(syn.type == VARIABLE);
+	CPPUNIT_ASSERT(attrName == VARNAME);
+
+	attrRef = "p.procName";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == true);
+	CPPUNIT_ASSERT(syn.value == "p");
+	CPPUNIT_ASSERT(syn.type == PROCEDURE);
+	CPPUNIT_ASSERT(attrName == PROCNAME);
+
+	attrRef = "c.value";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == true);
+	CPPUNIT_ASSERT(syn.value == "c");
+	CPPUNIT_ASSERT(syn.type == CONSTANT);
+	CPPUNIT_ASSERT(attrName == VALUE);
+
+	//invalid 
+	//undeclared synonym
+	attrRef = "a1.stmt#";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	//no dot
+	attrRef = "astmt#";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	//not a attrRef
+	attrRef = "n";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	//incorrect attrName 
+	attrRef = "a.value";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "a.varName";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "a.procName";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+
+	attrRef = "v.value";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "v.stmt#";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "v.procName";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+	
+
+	attrRef = "p.value";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "p.stmt#";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "p.varName";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+
+	attrRef = "c.stmt#";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "c.varName";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "c.procName";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+
+	//invalid attrName
+	attrRef = "s.stmt";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "w.Stmt#";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "c.val";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+	attrRef = "p.procname";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+
+
+	attrRef = "v.varname";
+	CPPUNIT_ASSERT(qv.IsValidAttrRef(attrRef , syn , attrName) == false);
+}
+
+void QueryPreProcessorTest::ValidateRelationshipTest()
+{
+
+}
+
+void QueryPreProcessorTest::ValidatePatternTest()
+{
+	QueryPreProcessor qp;
+	QueryData qd;
+	qd.ClearData();
+	qd.InsertDeclaration(Synonym("a",ASSIGN));
+	qd.InsertDeclaration(Synonym("w",WHILE));
+	qd.InsertDeclaration(Synonym("s",STMT));
+	qd.InsertDeclaration(Synonym("ifstat",IF));
+	qd.InsertDeclaration(Synonym("v",VARIABLE));
+	qd.InsertDeclaration(Synonym("p",PROCEDURE));
+	qd.InsertDeclaration(Synonym("c",CONSTANT));
+	qd.InsertDeclaration(Synonym("n",PROG_LINE));
+
+	//valid
+	Synonym syn;
+	Argument arg1, arg2, arg3;
+
+	syn.value = "ifstat";
+	arg1.value = "\" x \"";
+	arg2.value = "_";
+	arg3.value = "_";
+	CPPUNIT_ASSERT(qp.ValidatePattern(syn , arg1 , arg2 , arg3) == true);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "a");
+	CPPUNIT_ASSERT(arg1.syn.type == ASSIGN);
+	CPPUNIT_ASSERT(arg1.syn.value == "a");
+
+
+	std::string lhs = "#";
+	std::string rhs = "s.stmt#";
+	Argument arg1, arg2, arg3;
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == true);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "a");
+	CPPUNIT_ASSERT(arg1.syn.type == ASSIGN);
+	CPPUNIT_ASSERT(arg1.syn.value == "a");
+}
+
+
+void QueryPreProcessorTest::ValidateWithTest()
+{
+	QueryPreProcessor qp;
+	QueryData qd;
+	qd.ClearData();
+	qd.InsertDeclaration(Synonym("a",ASSIGN));
+	qd.InsertDeclaration(Synonym("w",WHILE));
+	qd.InsertDeclaration(Synonym("s",STMT));
+	qd.InsertDeclaration(Synonym("ifstat",IF));
+	qd.InsertDeclaration(Synonym("v",VARIABLE));
+	qd.InsertDeclaration(Synonym("p",PROCEDURE));
+	qd.InsertDeclaration(Synonym("c",CONSTANT));
+	qd.InsertDeclaration(Synonym("n",PROG_LINE));
+
+	//valid
+	std::string lhs = "a.stmt#";
+	std::string rhs = "s.stmt#";
+	Argument arg1, arg2;
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == true);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "a");
+	CPPUNIT_ASSERT(arg1.syn.type == ASSIGN);
+	CPPUNIT_ASSERT(arg1.syn.value == "a");
+
+	CPPUNIT_ASSERT(arg2.type == SYNONYM);
+	CPPUNIT_ASSERT(arg2.value == "s");
+	CPPUNIT_ASSERT(arg2.syn.type == STMT);
+	CPPUNIT_ASSERT(arg2.syn.value == "s");
+
+	lhs = "s.stmt#";
+	rhs = "5";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == true);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "s");
+	CPPUNIT_ASSERT(arg1.syn.type == STMT);
+	CPPUNIT_ASSERT(arg1.syn.value == "s");
+
+	CPPUNIT_ASSERT(arg2.type == INTEGER);
+	CPPUNIT_ASSERT(arg2.value == "5");
+
+	lhs = "ifstat.stmt#";
+	rhs = "c.value";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == true);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "ifstat");
+	CPPUNIT_ASSERT(arg1.syn.type == IF);
+	CPPUNIT_ASSERT(arg1.syn.value == "ifstat");
+
+	CPPUNIT_ASSERT(arg2.type == SYNONYM);
+	CPPUNIT_ASSERT(arg2.value == "c");
+	CPPUNIT_ASSERT(arg2.syn.type == CONSTANT);
+	CPPUNIT_ASSERT(arg2.syn.value == "c");
+
+	lhs = "n";
+	rhs = "10";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == true);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "n");
+	CPPUNIT_ASSERT(arg1.syn.type == PROG_LINE);
+	CPPUNIT_ASSERT(arg1.syn.value == "n");
+
+	CPPUNIT_ASSERT(arg2.type == INTEGER);
+	CPPUNIT_ASSERT(arg2.value == "10");
+
+	lhs = "n";
+	rhs = "a.stmt#";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == true);
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg1.value == "n");
+	CPPUNIT_ASSERT(arg1.syn.type == PROG_LINE);
+	CPPUNIT_ASSERT(arg1.syn.value == "n");
+
+	CPPUNIT_ASSERT(arg1.type == SYNONYM);
+	CPPUNIT_ASSERT(arg2.value == "a");
+	CPPUNIT_ASSERT(arg2.syn.type == ASSIGN);
+	CPPUNIT_ASSERT(arg2.syn.value == "a");
+
+	//invalid
+	lhs = "a.stmt#";
+	rhs = "p.procName";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+
+	lhs = "w.stmt#";
+	rhs = "v.varName";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+
+	lhs = "p.procName";
+	rhs = "c.value";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+
+	lhs = "n";
+	rhs = "p.procName";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+
+	lhs = "n";
+	rhs = "p.procName";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+
+	lhs = "p.procName";
+	rhs = "100";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+
+	lhs = "v.varName";
+	rhs = "5";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+	
+	lhs = "ifstat.stmt#";
+	rhs = "\"x\"";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+
+	lhs = "n";
+	rhs = "\"z\"";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+
+	lhs = "n.stmt#";
+	rhs = "5";
+	CPPUNIT_ASSERT(qp.ValidateWith(arg1 , arg2 , lhs , rhs) == false);
+
+
 }

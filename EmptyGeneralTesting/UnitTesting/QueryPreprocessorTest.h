@@ -9,8 +9,11 @@ class QueryPreProcessorTest : public CPPUNIT_NS::TestFixture
 	//CPPUNIT_TEST( HelperFunctionTest );
 	//CPPUNIT_TEST( ArgumentValidationTest );
 	//CPPUNIT_TEST( ClauseValidationTest );
-	CPPUNIT_TEST( TokenizeTest );
+	//CPPUNIT_TEST( TokenizeTest );
 	//CPPUNIT_TEST( ActualValidationTest );
+	//CPPUNIT_TEST(ValidateWithTest);
+	//CPPUNIT_TEST(ValidateRelationshipTest);
+	CPPUNIT_TEST(ValidatePatternTest);
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -25,5 +28,8 @@ public:
 	void ClauseValidationTest();
 	void TokenizeTest();
 	void ActualValidationTest();
+	void ValidateRelationshipTest();
+	void ValidatePatternTest();
+	void ValidateWithTest();
 };
 

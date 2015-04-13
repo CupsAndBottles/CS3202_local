@@ -40,12 +40,13 @@ enum SynonymType {
 	INVALID_SYNONYM_TYPE
 };
 
-enum AttrName {
+enum AttrNameType {
 	STMTNUM,
 	VALUE,
 	PROCNAME,
-	VARNAME
-}
+	VARNAME,
+	INVALID_ATTRNAME_TYPE
+};
 
 enum ClauseType {
 	DECLARATION,

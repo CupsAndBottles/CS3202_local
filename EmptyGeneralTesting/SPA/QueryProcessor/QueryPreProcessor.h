@@ -3,6 +3,20 @@
 #include <vector>
 #include "QueryData.h"
 
+typedef unsigned int UINT;
+typedef unsigned long long ULL;
+
+//for general output
+#define DEBUG_MSG 
+
+//#define DEBUG_MSG_TOKENIZER
+//#define DEBUG_MSG_VALIDATEQUERY
+//#define DEBUG_MSG_ISVALIDATTRREF
+//#define DEBUG_MSG_VALIDATERELATIONSHIP
+//#define DEBUG_MSG_VALIDATEPATTERN
+#define DEBUG_MSG_VALIDATEWITH
+
+
 class QueryPreProcessor
 {
 	friend class QueryPreProcessorTest;
@@ -11,7 +25,14 @@ protected:
 	//for debugging purpose
 	enum FUNCTION {
 		TOKENIZER,
-		VALIDATEQUERY
+		ISVALIDATTRREF,
+
+		VALIDATEQUERY,
+		VALIDATEDECLARATION,
+		VALIDATESELECT,		
+		VALIDATERELATIONSHIP,
+		VALIDATEPATTERN,
+		VALIDATEWITH
 	};
 
 	static const std::string de[];
@@ -52,9 +73,11 @@ protected:
 	//Convert string to enum
 	bool GetEnumSynonymType(std::string, SynonymType&); 
 	bool GetEnumRelationshipType(std::string, RelationshipType&);
+	AttrNameType GetEnumAttrNameType(std::string type);
 
-	bool IsValidAttrRef(std::string rhs , Synonym& syn , AttrName& attrN);
+	bool IsValidAttrRef(std::string rhs , Synonym& syn , AttrNameType& attrN);
 
+	void DebugMessage(std::string msg);
 	void DebugMessage(std::string msg , FUNCTION);
 
 public:

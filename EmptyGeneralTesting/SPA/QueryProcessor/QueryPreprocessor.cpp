@@ -5,8 +5,6 @@
 #include "RelTable.h"
 #include "..\..\AutoTester\source\AbstractWrapper.h"
 
-//#define DEBUG_MSG_TOKENIZER
-//#define DEBUG_MSG_VALIDATEQUERY
 
 const std::string QueryPreProcessor::de[] = {"stmt", "assign", "while", "if", "variable", "procedure", "prog_line", "constant"};
 const std::string QueryPreProcessor::rel[] = {"Modifies", "Uses", "Parent", "Parent*", "Follows", "Follows*", "Calls", "Calls*", "Next", "Next*", "Affects", "Affects*"};
@@ -301,12 +299,13 @@ bool QueryPreProcessor::ValidateQuery(std::string query, QueryData &queryData)
 			{
 				DebugMessage("\nIn if\n" , VALIDATEQUERY);
 
-				if(++it == tokenList.end())	return false;	//get arg3 and ignore it, since it must be _
+				if(++it == tokenList.end())	return false;	//get arg3 
 				DebugMessage(std::string("tokens: " + *it + "\n") , VALIDATEQUERY);
 				Argument arg3;
 				arg3.value = *it;
 				
 				if(!ValidatePattern(synonym, arg1, arg2, arg3))	return false;
+				//if expression, remove white space first
 				queryData.InsertPattern(synonym, arg1, arg2);	//just insert 2, because only the first one matter for IF
 			}
 			
@@ -470,29 +469,36 @@ bool QueryPreProcessor::ValidatePattern(Synonym synonym, Argument &arg1, Argumen
 		else if(IsIdent(arg1.value)) arg1.type = IDENT;
 
 		else {
-			std::cout << "Invalid Query: In ValidatePattern, Argument 1 type not found.\n";
+			DebugMessage("In ValidatePattern ASSIGN/WHILE, invalid Argument 1 type for ASSIGN pattern.\n");
 			return false;
 		}
 
 		if(arg2.value == "_") arg2.type = UNDERSCORE;
 
-		else if(IsExpression(arg2.value)) arg2.type = EXPRESSION;
+		else if(IsExpression(arg2.value)) 
+		{
+			std::string exp = arg2.value;
+			//remove white space, make life easer when doing pattern matching later
+			exp.erase(std::remove_if(exp.begin(), exp.end(), [](char x){return isspace(x);}), exp.end());
+			arg2.value = exp;
+			arg2.type = EXPRESSION;
+		}
 
 		else {
-			std::cout << "Invalid Query: In ValidatePattern, Argument 2 type not found.\n";
+			DebugMessage("In ValidatePattern ASSIGN/WHILE, invalid Argument 2 type for ASSIGN pattern.\n");
 			return false;
 		}
 
 		return true;
 	}
-
 	
-	//pattern w(v,_)
-	//pattern w("x",_)
-	//pattern w(_,_)
 	else if(synonym.type == WHILE)
 	{
-		if(!IsUnderscore(arg2.value)) return false;		//arg2 must be _
+		if(!IsUnderscore(arg2.value)) 
+		{
+			DebugMessage("In ValidatePattern ASSIGN/WHILE, invalid Argument 2 type for WHILE pattern, must be _.\n");
+			return false;		//arg2 must be _
+		}
 
 		if(IsUnderscore(arg1.value)) arg1.type = UNDERSCORE;
 		
@@ -504,20 +510,21 @@ bool QueryPreProcessor::ValidatePattern(Synonym synonym, Argument &arg1, Argumen
 			
 		else if(IsIdent(arg1.value)) arg1.type = IDENT;
 
-		else {
-			std::cout << "Invalid Query: In ValidatePattern, Argument 1 type not found.\n";
+		else 
+		{
+			DebugMessage("In ValidatePattern ASSIGN/WHILE, invalid Argument 1 type for WHILE pattern.\n");
 			return false;
 		}
 	}
 
 	else 
 	{
-		std::cout << "Invalid Query: In ValidatePattern, Synonym type is not ASSIGN or WHILE.\n";
+		DebugMessage("In ValidatePattern ASSIGN/WHILE, pattern has 2 argument but the synonym type is not ASSIGN or WHILE.\n");
 		return false;
 	}
 }
 
-//Only cater to IF
+//For IF pattern , take 3 argument
 //this function can call the above validatepattern with while
 bool QueryPreProcessor::ValidatePattern(Synonym synonym, Argument &arg1, Argument &arg2, Argument &arg3)
 {
@@ -526,7 +533,11 @@ bool QueryPreProcessor::ValidatePattern(Synonym synonym, Argument &arg1, Argumen
 	//pattern if(_,_,_)
 	if(synonym.type == IF)
 	{
-		if(!IsUnderscore(arg2.value) || !IsUnderscore(arg3.value)) return false;		//arg2 and arg3 must be _
+		if(!IsUnderscore(arg2.value) || !IsUnderscore(arg3.value)) 
+		{
+			DebugMessage("In ValidatePattern IF, invalid Argument 2 and 3 type for IF pattern, both must be _.\n");
+			return false;		//arg2 and arg3 must be _
+		}
 
 		if(IsUnderscore(arg1.value)) arg1.type = UNDERSCORE;
 		
@@ -539,14 +550,14 @@ bool QueryPreProcessor::ValidatePattern(Synonym synonym, Argument &arg1, Argumen
 		else if(IsIdent(arg1.value)) arg1.type = IDENT;
 
 		else {
-			std::cout << "Invalid Query: In ValidatePattern, Argument 1 type not found.\n";
+			DebugMessage("In ValidatePattern IF, invalid Argument 1 type for IF pattern.\n");
 			return false;
 		}
 	}
 
 	else 
 	{
-		std::cout << "Invalid Query: In ValidatePattern, Synonym type is not IF.\n";
+		DebugMessage("In ValidatePattern IF, pattern has 3 argument but the synonym type is not ASSIGN or WHILE.\n");
 		return false;
 	}
 }
@@ -650,8 +661,6 @@ bool QueryPreProcessor::ValidateRelationship(std::string rel, RelationshipType &
 
 bool QueryPreProcessor::ValidateWith(Argument& arg1, Argument& arg2, std::string lhs, std::string rhs)
 {
-	//verify synonym has the correct attrRef
-	//a.value ccannot, a.procname cannot
 	//lhs can be a.stmt# , c.value , p.procName , v.varName , n
 	//rhs can be a.stmt# , c.value , p.procName , v.varName , "ident" , 5
 	
@@ -674,21 +683,236 @@ bool QueryPreProcessor::ValidateWith(Argument& arg1, Argument& arg2, std::string
 	//	else return false
 
 	//else return false
+	DebugMessage("In ValidateWith\n" , VALIDATEWITH);
+
+	Synonym syn1 , syn2;
+	AttrNameType attrName1, attrName2;
+
+	if(IsValidAttrRef(lhs , syn1 , attrName1))
+	{
+		DebugMessage("LHS is valid attrRef\n" , VALIDATEWITH);
+
+		arg1.type = SYNONYM;
+		arg1.value = syn1.value;
+		arg1.syn = syn1;
+
+		if(attrName1 == STMTNUM || attrName1 == VALUE)
+		{
+			DebugMessage("LHS attrName is STMT/VALUE\n" , VALIDATEWITH);
+
+			if(IsInteger(rhs))
+			{
+				DebugMessage("RHS is integer\n" , VALIDATEWITH);
+				arg2.type = INTEGER;
+				arg2.value = rhs;
+			}
+
+			else if(IsValidAttrRef(rhs , syn2 , attrName2))
+			{
+				DebugMessage("RHS is valid attrRef\n" , VALIDATEWITH);
+
+				if(attrName2 == STMTNUM || attrName2 == VALUE)
+				{
+					DebugMessage("RHS attrName is STMTNUM\VALUE\n" , VALIDATEWITH);
+					arg2.type = SYNONYM;
+					arg2.value = syn2.value;
+					arg2.syn = syn2;
+				}
+
+				else 
+				{
+					DebugMessage("In ValidateWith, LHS is .stmt/.value, RHS is a valid attrRef but the attrName does not match.\n");
+					return false;
+				}
+			}
+
+			else
+			{
+				DebugMessage("In ValidateWith, LHS is .stmt/.value, RHS is not integer or a valid attrRef.\n");
+				return false;
+			}
+		}
+		
+		else if(attrName1 == VARNAME || attrName1 == PROCNAME)
+		{
+			DebugMessage("LHS attrName is STMT/VALUE\n" , VALIDATEWITH);
+
+			if(IsIdent(rhs))
+			{
+				DebugMessage("RHS is ident\n" , VALIDATEWITH);
+				arg2.type = IDENT;
+				arg2.value = rhs;
+			}
+
+			else if(IsValidAttrRef(rhs , syn2 , attrName2))
+			{
+				DebugMessage("RHS is valid attrRef\n" , VALIDATEWITH);
+				
+				if(attrName2 == VARIABLE || attrName2 == PROCEDURE)
+				{
+					DebugMessage("RHS attrName is VARIABLE\PROCEDURE\n" , VALIDATEWITH);
+					arg2.type = SYNONYM;
+					arg2.value = syn2.value;
+					arg2.syn = syn2;
+				}
+
+				else 
+				{
+					DebugMessage("In ValidateWith, LHS is .varName/.procName, RHS is a valid attrRef but the attrName does not match.\n");
+					return false;
+				}
+			}
+
+			else
+			{
+				DebugMessage("In ValidateWith, LHS is .varName/.procName, RHS is not IDENT or a valid attrRef.\n");
+				return false;
+			}
+		}
+
+		else
+		{
+			DebugMessage("In ValidateWith, LHS has invalid attrName.\n");
+			return false;
+		}
+	}
+
+	else if(QueryData::IsSynonymExist(lhs , PROG_LINE))
+	{
+		DebugMessage("LHS is prog_line, synonym exist\n" , VALIDATEWITH);
+
+		arg1.type = SYNONYM;
+		arg1.value = lhs;
+		arg1.syn.type = PROG_LINE;
+		arg1.syn.value = lhs;
 
 
+		if(IsInteger(rhs))
+		{
+			DebugMessage("RHS is integer\n" , VALIDATEWITH);
+			arg2.type = INTEGER;
+			arg2.value = rhs;
+		}
 
-	//isValidAttrRef() will tokenize and check whether syn is declared, and whether syn has correct attrRef, then return it
+		else if(IsValidAttrRef(rhs , syn2 , attrName2))
+		{
+			DebugMessage("RHS is valid attrRef\n" , VALIDATEWITH);
 
-	return false;
+			if(attrName2 == STMTNUM || attrName2 == VALUE)
+			{
+				DebugMessage("RHS attrName is STMTNUM\VALUE\n" , VALIDATEWITH);
+				arg2.type = SYNONYM;
+				arg2.value = syn2.value;
+				arg2.syn = syn2;
+			}
+
+			else
+			{
+				DebugMessage("In ValidateWith, LHS is prog_line, RHS is a valid attrRef but the attrName does not match.\n");
+				return false;
+			}
+		}
+
+		else
+		{
+			DebugMessage("In ValidateWith, LHS is prog_line, RHS is not IDENT or a valid attrRef.\n");
+			return false;
+		}
+	}
+	
+	else
+	{
+		DebugMessage("In ValidateWith, LHS is not a valid attrRef or prog_line");
+		return false;
+	}
+
+	return true;
 }
 
-bool QueryPreProcessor::IsValidAttrRef(std::string attrRef , Synonym& syn , AttrName& attrName)
+//tokenize lhs/rhs and check whether it is a valid attrRef
+bool QueryPreProcessor::IsValidAttrRef(std::string attrRef , Synonym& syn , AttrNameType& attrName)
 {
 	//tokenize rhs by .
 	//check tokens, size = 3, middle is dot
 	//check is syn declared, if not return false
 	//if yes assign to syn
+	DebugMessage("In IsValidAttrRef\n" , ISVALIDATTRREF);
 
+	std::vector<std::string> tokenList;
+	std::string delim = ".";
+
+	Tokenize(attrRef, tokenList, delim);
+
+	//attrRef must have 3 component - synonym . attrName
+	//tokenize return 2 component after remove .
+	if(tokenList.size () != 2)
+		return false;
+
+	for(unsigned int i=0; i<2; ++i)
+		DebugMessage(std::string("token " + std::to_string(long long(i)) + ": " + tokenList[i] + "\n") , ISVALIDATTRREF);
+
+	SynonymType synType = INVALID_SYNONYM_TYPE;;
+	std::string synValue = tokenList[0];
+	std::string attrNameStr = tokenList[1];
+
+	if(QueryData::IsSynonymExist(tokenList[0] , &synType))
+	{
+		DebugMessage("Synonym exist\n" , ISVALIDATTRREF);
+
+		//a/s/w/i . stmt#
+		if(synType == ASSIGN || synType == STMT || synType == WHILE || synType == IF)
+		{
+			DebugMessage("Synonym type exist in A/S/W/I\n" , ISVALIDATTRREF);
+			syn.type = synType;
+			syn.value = synValue;
+
+			AttrNameType type = GetEnumAttrNameType(attrNameStr);
+			if(type == STMTNUM)		attrName = type;
+			else return false;
+		}
+
+		//c.value
+		else if(synType == CONSTANT)
+		{
+			DebugMessage("Synonym type exist in C\n" , ISVALIDATTRREF);
+			syn.type = synType;
+			syn.value = synValue;
+
+			AttrNameType type = GetEnumAttrNameType(attrNameStr);
+			if(type == VALUE)	attrName = type;
+			else return false;
+		}
+
+		//v.varName
+		else if(synType == VARIABLE)
+		{
+			DebugMessage("Synonym type exist in V\n" , ISVALIDATTRREF);
+			syn.type = synType;
+			syn.value = synValue;
+
+			AttrNameType type = GetEnumAttrNameType(attrNameStr);
+			if(type == VARNAME)	attrName = type;
+			else return false;
+		}
+
+		//p.procName
+		else if(synType == PROCEDURE)
+		{
+			DebugMessage("Synonym type exist in P\n" , ISVALIDATTRREF);
+			syn.type = synType;
+			syn.value = synValue;
+
+			AttrNameType type = GetEnumAttrNameType(attrNameStr);
+			if(type == PROCNAME) attrName = type;
+			else return false;
+		}
+		
+		else return false;
+	}
+
+	else return false;
+
+	return true;
 }
 
 
@@ -845,6 +1069,14 @@ bool QueryPreProcessor::GetEnumRelationshipType(std::string type, RelationshipTy
 	return true;
 }
 
+AttrNameType QueryPreProcessor::GetEnumAttrNameType(std::string type) 
+{
+	if(type == "stmt#")				return  STMTNUM;
+	else if(type == "value")		return VALUE;
+	else if(type == "procName")		return PROCNAME;
+	else if(type == "varName")		return VARNAME;
+	else							return INVALID_ATTRNAME_TYPE;
+}
 
 
 
@@ -947,12 +1179,6 @@ bool QueryPreProcessor::IsRelationship(std::string str)
 
 	return false;
 }
-
-
-
-
-
-
 
 bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &tokens) 
 {
@@ -1301,6 +1527,16 @@ bool QueryPreProcessor::Tokenize(std::string query, std::vector<std::string> &to
 	return true;
 }
 
+//output general debugging message useful
+void QueryPreProcessor::DebugMessage(std::string msg)
+{
+	#ifdef DEBUG_MSG
+		std::cout << "Invalid query: ";
+		std::cout << msg;
+	#endif
+}
+
+//output debugging messsage for a specific function for testing purpose
 void QueryPreProcessor::DebugMessage(std::string msg , FUNCTION function)
 {
 	if(function == TOKENIZER)
@@ -1313,6 +1549,41 @@ void QueryPreProcessor::DebugMessage(std::string msg , FUNCTION function)
 	else if(function == VALIDATEQUERY)
 	{
 		#ifdef DEBUG_MSG_VALIDATEQUERY
+			std::cout << msg;
+		#endif
+	}
+	
+	else if(function == ISVALIDATTRREF)
+	{
+		#ifdef DEBUG_MSG_ISVALIDATTRREF
+			std::cout << msg;
+		#endif
+	}
+
+	else if(function == ISVALIDATTRREF)
+	{
+		#ifdef DEBUG_MSG_ISVALIDATTRREF
+			std::cout << msg;
+		#endif
+	}
+
+	else if(function == VALIDATERELATIONSHIP)
+	{
+		#ifdef DEBUG_MSG_VALIDATERELATIONSHIP
+			std::cout << msg;
+		#endif
+	}
+
+	else if(function == VALIDATEPATTERN)
+	{
+		#ifdef DEBUG_MSG_VALIDATEPATTERN
+			std::cout << msg;
+		#endif
+	}
+
+	else if(function == VALIDATEWITH)
+	{
+		#ifdef DEBUG_MSG_VALIDATEWITH
 			std::cout << msg;
 		#endif
 	}
