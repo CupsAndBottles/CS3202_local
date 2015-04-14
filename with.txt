@@ -21,7 +21,7 @@ a.stmt# = 5
 a.stmt# = a2.stmt#
 a.stmt# = s.stmt# // check if s is a valid a before assigning
 a.stmt# = c.value //When evaluating, check whether c value is a valid assignment statement	
-//a.stmt# = n
+a.stmt# = n
 a.stmt# = w.stmt# and i.stmt# is valid although doesnt make sense?
 //When evaluating, if a = w or a = i, a will be empty
 
