@@ -15,9 +15,13 @@ const string TNode::enumStringDeclarations[] = {
 	"If"
 };
 
+int TNode::nodeCounter;
+
 TNode::TNode(Type type, string name)
 	: type(type), name(name), rightSibling(nullptr)
 	, logicalParent(nullptr), content(""), lineNumber(0) {
+	nodeIndex = nodeCounter;
+	nodeCounter++;
 }
 
 void TNode::ThrowUnsupportedOperationException() {
@@ -87,6 +91,10 @@ int TNode::GetLineNumber() {
 	return lineNumber;
 }
 
+int TNode::GetNodeIndex() {
+	return nodeIndex;
+}
+
 string TNode::EnumToString(TNode::Type type) {
 	return enumStringDeclarations[type];
 }
@@ -148,4 +156,8 @@ TNode TNode::ConstructStmtTNode(Type type, int lineNumber) {
 	TNode result(type, ":" + EnumToString(type));
 	result.lineNumber = lineNumber;
 	return result;
+}
+
+void TNode::resetNodeCounter() {
+	nodeCounter = 0;
 }

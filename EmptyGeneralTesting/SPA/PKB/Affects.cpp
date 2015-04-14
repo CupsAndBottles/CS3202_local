@@ -254,8 +254,7 @@ pair<vector<int>, vector<bool>> Affects::RecurTraverseUpCFG(int currStmt, vector
 
 	//cout << "\n currStmt: " << currStmt << "\n";
 
-	switch(StmtTypeTable::GetStmtTypeOf(currStmt)) {
-	case ASSIGN: {
+	if (StmtTypeTable::GetStmtTypeOf(currStmt) == ASSIGN) {
 		if (!stmtsIsChecked.at(currStmt)) {
 			int varModified = Modifies::GetVarModifiedByStmt(currStmt).at(0);
 			vector<int>::iterator it = varsUsed.begin();
@@ -271,8 +270,7 @@ pair<vector<int>, vector<bool>> Affects::RecurTraverseUpCFG(int currStmt, vector
 		} else {
 			nextBeforeCurrStmt.clear();
 		}
-	} break;
-	case WHILE: {
+	} else if (StmtTypeTable::GetStmtTypeOf(currStmt) == WHILE) {
 		vector<int>::iterator it = nextBeforeCurrStmt.begin();
 		if (!stmtsIsChecked.at(currStmt)) {
 			while (it != nextBeforeCurrStmt.end()) {
@@ -288,16 +286,14 @@ pair<vector<int>, vector<bool>> Affects::RecurTraverseUpCFG(int currStmt, vector
 			nextBeforeCurrStmt.clear();
 		}
 
-	} break;
-	case IF: {
+	} else if (StmtTypeTable::GetStmtTypeOf(currStmt) == IF) {
 		vector<int> nextAfterIf = Next::GetNextAfter(currStmt);
 		if ((int) nextAfterIf.size() == 2) {
 			if (stmtsIsChecked.at(nextAfterIf.at(0)) && stmtsIsChecked.at(nextAfterIf.at(1))) {
 				stmtsIsChecked.at(currStmt) = true;
 			} 
 		}
-	}
-	case CALL:{
+	} else if (StmtTypeTable::GetStmtTypeOf(currStmt) == CALL) {
 		int procCalled = ProcTable::GetIndexOfProc(Program::GetStmtFromNumber(currStmt).GetContent());
 		if (!stmtsIsChecked.at(currStmt)) {
 			int varModified = Modifies::GetVarModifiedByProc(procCalled).at(0);
@@ -314,10 +310,8 @@ pair<vector<int>, vector<bool>> Affects::RecurTraverseUpCFG(int currStmt, vector
 		} else {
 			nextBeforeCurrStmt.clear();
 		}
-	} break;
-	default:
+	} else {
 		cout << "unable to determine stmttype of stmt# " << currStmt;
-		break;
 	}
 
 	if (!varsUsed.empty()) {

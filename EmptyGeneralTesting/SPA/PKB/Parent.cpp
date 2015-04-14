@@ -2,11 +2,16 @@
 #include <utility>
 #include <map>
 #include <vector>
+#include <iostream>
 
 #include "Parent.h"
+#include "StmtTypeTable.h"
 
 map <int, vector<int>> Parent::parentToChildrenTable;
 map <int, int> Parent::childToParentTable;
+vector<vector<bool>> Parent::parentToChildrenTBV;
+vector<vector<int>> Parent::parentToChildrenTTable;
+vector<vector<int>> Parent::childToParentTTable;
 
 /** public methods **/
 Parent::Parent() {
@@ -56,8 +61,21 @@ bool Parent::IsParentT(int parentStmtIndex, int childStmtIndex) {
 
 }
 
+bool Parent::IsParentTBV(int parentStmtIndex, int childStmtIndex) {
+	int totalNoOfStmts = StmtTypeTable::GetMaxStmtIndex();
+
+	if (parentStmtIndex >= 0 && parentStmtIndex <= totalNoOfStmts
+		&& childStmtIndex >= 0 && childStmtIndex <= totalNoOfStmts) {
+			return parentToChildrenTBV.at(parentStmtIndex).at(childStmtIndex);
+	} else {
+		return false;
+	}
+
+}
+
 vector<int> Parent::GetParentTOf(int childStmtIndex) {
 	vector<int> parentList;
+
 	int currParent = GetParentOf(childStmtIndex);
 
 	while (currParent != -1) {
@@ -69,6 +87,23 @@ vector<int> Parent::GetParentTOf(int childStmtIndex) {
 	}
 
 	return parentList;
+}
+
+vector<int> Parent::GetStoredParentTOf(int childStmtIndex) {
+	int maxStmtIndex = StmtTypeTable::GetMaxStmtIndex();
+
+	if (childStmtIndex >= 0 && childStmtIndex <= maxStmtIndex) {
+		if ((int) childToParentTTable.size() >= childStmtIndex) {
+			return childToParentTTable.at(childStmtIndex);
+		} else {
+			cout << "\nwarning: unable to find " << childStmtIndex << " in childToParentTTable.\n";
+			return GetParentTOf(childStmtIndex);
+		}
+	}
+
+	vector<int> emptyList;
+	return emptyList;
+
 }
 
 vector<int> Parent::GetChildrenTOf(int parentStmtIndex) {
@@ -93,6 +128,73 @@ vector<int> Parent::GetChildrenTOf(int parentStmtIndex) {
 
 }
 
+vector<int> Parent::GetStoredChildrenTOf(int parentStmtIndex) {
+	vector<int> childrenList;
+	int maxStmtIndex = StmtTypeTable::GetMaxStmtIndex();
+
+	if (parentStmtIndex >= 0 && parentStmtIndex <= maxStmtIndex) {
+		if ((int) parentToChildrenTTable.size() >= 0) {
+			return parentToChildrenTTable.at(parentStmtIndex);
+		} else {
+			cout << "\nwarning: unable to find " << parentStmtIndex << " in parentToChildrenTTable.\n";
+			return GetChildrenTOf(parentStmtIndex);
+		}
+	}
+
+	return childrenList;
+
+
+}
+
+void Parent::CreateParentToChildrenTBV() {
+	int totalNoOfStmts = StmtTypeTable::GetMaxStmtIndex();
+	vector<bool> emptyRow(totalNoOfStmts + 1, false);
+	parentToChildrenTBV = vector<vector<bool>>(totalNoOfStmts + 1, emptyRow);
+
+	vector<int> allStmts = StmtTypeTable::GetAllStmtsOfType(STMT);
+	vector<int> childrenT;
+	for (vector<int>::iterator it1 = allStmts.begin(); it1 != allStmts.end(); it1++) {
+		childrenT = GetChildrenTOf(*it1);
+
+		for (vector<int>::iterator it2 = childrenT.begin(); it2 != childrenT.end(); it2++) {
+			parentToChildrenTBV.at(*it1).at(*it2) = true;
+
+		}
+	
+	}
+
+}
+
+void Parent::CreateParentToChildrenTTable() {
+	int totalNoOfStmts = StmtTypeTable::GetMaxStmtIndex();
+	vector<int> emptyRow;
+	parentToChildrenTTable = vector<vector<int>>(totalNoOfStmts + 1, emptyRow);
+
+	vector<int> allStmts = StmtTypeTable::GetAllStmtsOfType(STMT);
+	vector<int> childrenT;
+	for (vector<int>::iterator it = allStmts.begin(); it != allStmts.end(); it++) {
+		childrenT = GetChildrenTOf(*it);
+		parentToChildrenTTable.at(*it) = childrenT;
+	
+	}
+
+}
+
+void Parent::CreateChildrenToParentTTable() {
+	int totalNoOfStmts = StmtTypeTable::GetMaxStmtIndex();
+	vector<int> emptyRow;
+	childToParentTTable = vector<vector<int>>(totalNoOfStmts + 1, emptyRow);
+
+	vector<int> allStmts = StmtTypeTable::GetAllStmtsOfType(STMT);
+	vector<int> parentT;
+	for (vector<int>::iterator it = allStmts.begin(); it != allStmts.end(); it++) {
+		parentT = GetParentTOf(*it);
+		childToParentTTable.at(*it) = parentT;
+	
+	}
+
+}
+
 // tells whether any parents relationships are stored
 bool Parent::HasAnyParents() {
 	return SizeOfParent() > 0;
@@ -105,6 +207,9 @@ int Parent::SizeOfParent() {
 void Parent::ClearData() {
 	parentToChildrenTable.clear();
 	childToParentTable.clear();
+	parentToChildrenTBV.clear();
+	parentToChildrenTTable.clear();
+	childToParentTTable.clear();
 }
 
 /** private methods **/

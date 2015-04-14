@@ -50,11 +50,11 @@ vector<int> NodeTypeTable::GetAllNodesOfType(NodeType type) {
 	return nodeTable[type];
 }
 
-vector<int> NodeTypeTable::GetAllVarNodesOfVar(int varTableIndex) {
+vector<int> NodeTypeTable::GetAllNodesOfVar(int varTableIndex) {
 	return varNodeTable[varTableIndex];
 }
 
-vector<int> NodeTypeTable::GetAllConstNodesOfConst(int constTableIndex) {
+vector<int> NodeTypeTable::GetAllNodesOfConst(int constTableIndex) {
 	return constNodeTable[constTableIndex];
 }
 
@@ -122,7 +122,7 @@ int NodeTypeTable::GetNoOfNodes() {
 	return nodeIndexToPtrMap.size();
 }
 
-int NodeTypeTable::GetNoOfNodexOfType(NodeType type) {
+int NodeTypeTable::GetNoOfNodesOfType(NodeType type) {
 	return nodeTable[type].size();
 }
 

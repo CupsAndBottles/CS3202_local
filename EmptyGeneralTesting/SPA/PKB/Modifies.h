@@ -19,6 +19,8 @@ class Modifies {
         static bool IsStmtModifyingVarBV(int stmtModifying, int varModified);
         static vector<int> GetStmtModifyingVar(int varModified);
 		static vector<int> GetVarModifiedByStmt(int stmtModifying);
+		vector<int> Modifies::GetStmtsModifyingBV(int varModified);
+		vector<int> Modifies::GetVarsModifiedByBV(int stmtModifying);
 
 		static void SetProcModifiesVar(int procModifying, int varModified);
 		static bool IsProcModifyingVar(int procModifying, int varModified);

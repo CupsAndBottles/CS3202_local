@@ -23,8 +23,17 @@ public:
 	static vector<int> GetProcsCalledTBy(int procCalling);
 	static vector<int> GetProcsCallingT(int procCalled);
 
+	static bool IsCallsTBV(int procCalling, int procCalled);
+	static vector<int> GetStoredProcsCalledTBy(int procCalling);
+	static vector<int> GetStoredProcsCallingT(int procCalled);
+
+	static void CreateCallingToCalledTBV();
+	static void CreateCallingToCalledTTable();
+	static void CreateCalledToCallingTTable();
+
 	static bool HasAnyCalls();
 	static void CreateBitVector();
+	
 	// helper methods for testing
 	static int SizeOfCalls();
 	static void ClearData();
@@ -32,9 +41,15 @@ public:
 private:
 	static map<int, vector<int>> callingToCalledTable;
 	static map<int, vector<int>> calledToCallingTable;
+	
 	static map<int, vector<bool>> callingToCalledBitVector;
 	static vector<vector<bool>> bitVector;
 	static bool bitVectorIsBuilt;
+
+	static vector<vector<bool>> callingToCalledTBV;
+	static vector<vector<int>> callingToCalledTTable;
+	static vector<vector<int>> calledToCallingTTable;
+	
 	static int maxNoOfProcs;
 
 	static int noOfCallsRelationships;

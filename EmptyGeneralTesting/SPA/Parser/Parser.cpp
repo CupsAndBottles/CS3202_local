@@ -94,6 +94,8 @@ void Parser::Parse(string fileName) {
 	buffer << sourceFile.rdbuf();
 	sourceFile.close();
 
+	TNode::resetNodeCounter();
+
 	vector<Token> tokens = Tokenizer::Tokenize(buffer.str());
 	Parser parser(tokens);
 	parser.Parse();
@@ -205,7 +207,6 @@ TNode* Parser::ParseStmt(TNode* parentStmt) {
 	switch (firstToken.type) {
 		case Token::IDENTIFIER:
 			stmt = ParseAssignmentStmt();
-			ConsumeTopTokenOfType(Token::END_OF_STMT);
 			StmtTypeTable::Insert(stmt->GetLineNumber(), ASSIGN);
 			break;
 		case Token::WHILE:
@@ -248,9 +249,8 @@ TNode* Parser::ParseAssignmentStmt() {
 
 TNode* Parser::ParseExpr(bool isBracket) {
 	Token::Type terminatingCondition = isBracket ? Token::CLOSE_BRACE : Token::END_OF_STMT;
-	Token currentToken = PeekAtTopToken(); // peek
 	TNode* result = nullptr;
-	while (currentToken.type != terminatingCondition) {
+	while (!TopTokenIsType(terminatingCondition)) {
 		if (result == nullptr) {
 			if (TopTokenIsType(Token::OPEN_BRACE)) {
 				ConsumeTopTokenOfType(Token::OPEN_BRACE);
@@ -258,14 +258,11 @@ TNode* Parser::ParseExpr(bool isBracket) {
 			} else {
 				result = ParseAtomicToken();
 			}
-
-			if (PeekAtTopToken().type == terminatingCondition) { // peek at next token
-				return result;
-			}
+		} else {
+			result = ParseExpr(result, isBracket);
 		}
-		result = ParseExpr(result, isBracket);
-		currentToken = PeekAtTopToken();
 	}
+	ConsumeTopTokenOfType(terminatingCondition);
 	return result;
 }
 
@@ -330,12 +327,11 @@ TNode* Parser::ParseConstTNode() {
 TNode* Parser::ParseVariableTNode(bool isModifies) {
 	string variable = ConsumeTopTokenOfType(Token::IDENTIFIER).content;
 	TNode* result = ConstructVarTNode(variable);
+	int varIndex = VarTable::InsertVar(variable);
 	if (isModifies) {
-		int varIndex = VarTable::InsertVar(variable);
 		Modifies::SetStmtModifiesVar(currentLineNumber, varIndex);
 		Modifies::SetProcModifiesVar(currentProcNumber, varIndex);
 	} else {
-		int varIndex = VarTable::InsertVar(variable);
 		Uses::SetStmtUsesVar(currentLineNumber, varIndex);
 		Uses::SetProcUsesVar(currentProcNumber, varIndex);
 	}
@@ -363,6 +359,7 @@ TNode* Parser::ParseCallStmt() {
 	ConsumeTopTokenOfType(Token::CALL);
 	string procedure = ConsumeTopTokenOfType(Token::IDENTIFIER).content;
 	TNode* callNode = ConstructCallTNode(currentLineNumber, procedure);
+	ConsumeTopTokenOfType(Token::END_OF_STMT);
 	return callNode;
 }
 
@@ -376,11 +373,11 @@ TNode* Parser::ParseIfStmt() {
 
 	// parse then body
 	ConsumeTopTokenOfType(Token::THEN);
-	TNode* thenBody = ParseStmtList("", ifStmt);
+	TNode* thenBody = ParseStmtList("then", ifStmt);
 	
 	// parse else body
 	ConsumeTopTokenOfType(Token::ELSE);
-	TNode* elseBody = ParseStmtList("", ifStmt);
+	TNode* elseBody = ParseStmtList("else", ifStmt);
 
 	// create if statement
 	ifStmt->AddChild(conditionNode);
@@ -388,8 +385,3 @@ TNode* Parser::ParseIfStmt() {
 	ifStmt->AddChild(elseBody);
 	return ifStmt;
 }
-
-//void main() {
-//	Parser::Parse("sample_SIMPLE_source.txt");
-//	TNode& program = Program::GetASTRootNode();
-//}

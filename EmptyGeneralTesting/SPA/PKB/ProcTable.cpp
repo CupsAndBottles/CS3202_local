@@ -77,7 +77,7 @@ void ProcTable::SetLastStmtNoOfProc(int procIndex, int lastStmtNo) {
 	if (procIndex >= 0 && procIndex < (int) procNames.size()) {
 		// check that firstStmt has been set and lastStmt has NOT been set
 		if (firstStmtNosList.count(procIndex) != 0 && lastStmtNosList.count(procIndex) == 0) {
-			if (lastStmtNo > firstStmtNosList.at(procIndex))
+			if (lastStmtNo >= firstStmtNosList.at(procIndex))
 				lastStmtNosList[procIndex] = lastStmtNo;
 		}
 	} else {

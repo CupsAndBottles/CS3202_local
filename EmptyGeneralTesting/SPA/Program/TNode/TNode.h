@@ -20,6 +20,7 @@ public:
 	};
 
 	static const string enumStringDeclarations[];
+	static int nodeCounter;
 
 	TNode* GetDirectParent();
 	TNode* GetLogicalParent();
@@ -32,6 +33,7 @@ public:
 	int GetLineNumber();
 	bool IsType(Type);
 	bool HasChildren();
+	int GetNodeIndex();
 	
 	void SetRightSibling(TNode*);
 	void SetLogicalParent(TNode*);
@@ -50,6 +52,7 @@ public:
 	static TNode ConstructProcedureTNode(string name);
 	static TNode ConstructProgramTNode(string name);
 	static TNode ConstructStmtTNode(Type type, int lineNumber);
+	static void resetNodeCounter();
 
 private:
 	TNode(Type type, string name);
@@ -62,6 +65,7 @@ private:
 	string name;
 	string content;
 	int lineNumber;
+	int nodeIndex;
 
 	void ThrowUnsupportedOperationException();
 

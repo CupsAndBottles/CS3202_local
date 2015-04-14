@@ -8,6 +8,8 @@
 #include "..\PKB\Calls.h"
 #include "..\PKB\Next.h"
 #include "..\PKB\Parent.h"
+#include "..\PKB\NextBip.h"
+#include "..\PKB\NodeTypeTable.h"
 #include "..\QueryProcessor\Grammar.h"
 
 #include <vector>
@@ -39,16 +41,41 @@ Next
 				connect tails to follows(ifstmt, next)
 */
 
+void ComputeNodeTypeTable();
 void ComputeModifiesAndUses();
 void ComputeCalls();
 void ComputeModifiesAndUsesForProcedures();
 void ComputeNext();
+void ComputeNextBip();
 
 void DesignExtractor::Extract() {
-	ComputeModifiesAndUses();
+	ComputeNodeTypeTable();
 	ComputeCalls();
+	ComputeNext();
+	ComputeNextBip();
 	ComputeModifiesAndUsesForProcedures();
-	//ComputeNext();
+	ComputeModifiesAndUses();
+}
+
+void ComputeNodeTypeTable() {
+	// flatten nodes and iterate through them
+	// ast has no loops if following only child links.
+
+	NodeTypeTable::Initialise();
+	
+	vector<TNode*> currentSet;
+	currentSet.push_back(&Program::GetASTRootNode());
+
+	while (currentSet.size() > 0) {
+		vector<TNode*> nextSet;
+		for each (TNode* nodeptr in currentSet) {
+			NodeTypeTable::Insert(nodeptr);
+			for each (TNode* child in nodeptr->GetChildren()) {
+				nextSet.push_back(child);
+			}
+		}
+		currentSet = nextSet;
+	}
 }
 
 void ComputeModifiesAndUsesForProcedures() {
@@ -72,11 +99,12 @@ void ComputeModifiesAndUsesForProcedures() {
 	public:
 		int componentCounter;
 		TarjanHelper() {
-			depthCounter, componentCounter = 0;
+			depthCounter, componentCounter = 1;
 			// TODO find an easier way of getting this out
 			for each (string procedure in ProcTable::GetAllProcNames()) {
 				int procIndex = ProcTable::GetIndexOfProc(procedure);
 				procMap[procIndex] = ProcInfo(procIndex);
+				int i = procMap[procIndex].minReacheableDepth;
 				procedures.push_back(procIndex);
 			}
 		}
@@ -126,6 +154,7 @@ void ComputeModifiesAndUsesForProcedures() {
 					SCCStack.pop_back();
 					nextProc = procMap[SCCStack.back()];
 				}
+				procMap[SCCStack.back()].componentIndex = componentCounter;
 				SCCStack.pop_back();
 				componentCounter++; // one component done, on to the next
 			}
@@ -166,7 +195,7 @@ void ComputeModifiesAndUsesForProcedures() {
 	// iterate through each component
 	// compute us/mo for procs within components first
 	for (c_map_iter i = componentMap.begin(); i != componentMap.end(); i++) {
-		if (i->second.size() == 1) break;
+		if (i->second.size() == 1) continue;
 		set<int> usedVars;
 		set<int> modifiedVars;
 		// sum up the vars for all procs in the component
@@ -191,8 +220,6 @@ void ComputeModifiesAndUsesForProcedures() {
 	// all direct parents inherit properties of children
 	// clean leaves and add parents of current set to that
 	// loop from top
-
-	// TODO fix bug here!!!
 
 	// loop through all leaves
 	while (componentsWithoutChildren.size() != 0) {
@@ -264,9 +291,7 @@ set<int> ConnectStmtList(int startPoint) {
 			prevStmts.insert(currentStmt);
 
 		} else {
-
 			prevStmts.insert(currentStmt);
-
 		}
 		// goto next stmt
 		currentStmt = Follows::GetFollowsAfter(currentStmt);
@@ -279,7 +304,10 @@ void ComputeNext() {
 	// loops through all procedures, connecting the stmts
 	for each (string procName in ProcTable::GetAllProcNames()) {
 		int procIndex = ProcTable::GetIndexOfProc(procName);
-		ConnectStmtList(ProcTable::GetFirstStmtNoOfProc(procIndex));
+		set<int> finalStmts = ConnectStmtList(ProcTable::GetFirstStmtNoOfProc(procIndex));
+		for each (int stmt in finalStmts) {
+			NextBip::setEndOfProc(procIndex, stmt);
+		}
 	}
 }
 
@@ -294,7 +322,6 @@ void ComputeCalls() {
 }
 
 void ComputeModifiesAndUses() {
-	// TODO migrate code
 	/* Remember that
 		while x {		\\ 1
 			while y {	\\ 2
@@ -312,17 +339,37 @@ void ComputeModifiesAndUses() {
 	// loop
 
 	vector<int> assignmentStmts = StmtTypeTable::GetAllStmtsOfType(ASSIGN);
+	vector<int> callStmts = StmtTypeTable::GetAllStmtsOfType(CALL);
 
-	set<int> currentChildren(assignmentStmts.begin(), assignmentStmts.end());
+	set<int> currentChildren;
+	currentChildren.insert(assignmentStmts.begin(), assignmentStmts.end());
+	currentChildren.insert(callStmts.begin(), callStmts.end());
 	
 	while (currentChildren.size() != 0) {
 		set<int> parents;
 
 		for each (int stmt in currentChildren) {
 			int parent = Parent::GetParentOf(stmt);
-			if (parent == -1) break;
-			vector<int> usedVars = Uses::GetVarUsedByStmt(stmt);
-			vector<int> modifiedVars = Modifies::GetVarModifiedByStmt(stmt);
+			if (parent == -1) continue;
+			vector<int> usedVars, modifiedVars;
+
+			if (StmtTypeTable::GetStmtTypeOf(stmt) == CALL) {
+				// should only encounter this code on the first pass. Maybe can optimise
+				int proc = ProcTable::GetIndexOfProc(Program::GetStmtFromNumber(stmt).GetContent());
+				usedVars = Uses::GetVarUsedByProc(proc);
+				// compute modifies and uses for calls here as well
+				modifiedVars = Modifies::GetVarModifiedByProc(proc);
+				for each (int var in usedVars) {
+					Uses::SetStmtUsesVar(stmt, var);
+				}
+				for each (int var in modifiedVars) {
+					Modifies::SetStmtModifiesVar(stmt, var);
+				}
+			} else { // assign or while or whatever
+				usedVars = Uses::GetVarUsedByStmt(stmt);
+				modifiedVars = Modifies::GetVarModifiedByStmt(stmt);
+			}
+
 			for each (int var in usedVars) {
 				Uses::SetStmtUsesVar(parent, var);
 			}
@@ -333,6 +380,14 @@ void ComputeModifiesAndUses() {
 		}
 
 		currentChildren = parents;
+	}
+}
+
+void ComputeNextBip() {
+	for each (int call in StmtTypeTable::GetAllStmtsOfType(CALL)) {
+		TNode& callNode = Program::GetStmtFromNumber(call);
+		int calledProc = ProcTable::GetIndexOfProc(callNode.GetContent());
+		NextBip::setReturnPoint(calledProc, call);
 	}
 
 }

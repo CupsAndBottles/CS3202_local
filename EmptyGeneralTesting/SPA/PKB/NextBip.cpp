@@ -194,7 +194,7 @@ void NextBip::ClearData() {
 	}
 }
 
-queue<int> Next::AddToQueue(queue<int> linesToCheck, vector<int> additions) {
+queue<int> NextBip::AddToQueue(queue<int> linesToCheck, vector<int> additions) {
 	for (unsigned int i = 0; i < additions.size(); i++) {
 		linesToCheck.push(additions.at(i));
 	}

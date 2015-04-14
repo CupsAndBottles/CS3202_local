@@ -16,6 +16,7 @@ public:
 	//API-Query
 	static vector<int> GetAllStmtsOfType(SynonymType type);
 	// static vector<int> GetAllStmtsOfTypeFrmProc(SynonymType type, int procIndex);
+	static SynonymType GetStmtTypeOf(int stmtIndex);
 	static bool CheckIfStmtOfType(int stmtIndex, SynonymType type);
 
 	//API-PKB and DE
@@ -23,6 +24,7 @@ public:
 	
 	static int GetNoOfStmts();
 	static int GetNoOfStmtsOfType(SynonymType type);
+	static int GetMaxStmtIndex();
 
 	static void ClearData();
 
@@ -35,6 +37,8 @@ private:
 	static vector<int> allWhileStmts;
 	static vector<int> allCallStmts;
 	static vector<int> allIfThenStmts;
+
+	static int maxStmtIndex;
 
 	static void InsertByTypes(int stmtIndex, SynonymType type);
 	static bool ValidType(SynonymType type);

@@ -2,12 +2,16 @@
 #include <utility>
 #include <map>
 #include <vector>
+#include <iostream>
 
 #include "Follows.h"
 #include "StmtTypeTable.h"
 
 map <int, int> Follows::beforeToAfterTable;
 map <int, int> Follows::afterToBeforeTable;
+vector<vector<bool>> Follows::beforeToAfterTBV;
+vector<vector<int>> Follows::beforeToAfterTTable;
+vector<vector<int>> Follows::afterToBeforeTTable;
 
 /** public methods **/
 Follows::Follows() {
@@ -72,6 +76,18 @@ bool Follows::IsFollowsT(int stmtBefore, int stmtAfter) {
 
 }
 
+bool Follows::IsFollowsTBV(int stmtBefore, int stmtAfter) {
+	int totalNoOfStmts = StmtTypeTable::GetMaxStmtIndex();
+
+	if (stmtBefore >= 0 && stmtBefore <= totalNoOfStmts
+		&& stmtAfter >= 0 && stmtAfter <= totalNoOfStmts) {
+			return beforeToAfterTBV.at(stmtBefore).at(stmtAfter);
+	} else {
+		return false;
+	}
+
+}
+
 vector<int> Follows::GetFollowsTBefore(int stmtAfter) {
 	vector<int> beforeList;
 	int stmtBefore = GetFollowsBefore(stmtAfter);
@@ -85,6 +101,22 @@ vector<int> Follows::GetFollowsTBefore(int stmtAfter) {
 	}
 
 	return beforeList;
+}
+
+vector<int> Follows::GetStoredFollowsTBefore(int stmtAfter) {
+	int maxStmtIndex = StmtTypeTable::GetMaxStmtIndex();
+
+	if (stmtAfter >= 0 && stmtAfter <= maxStmtIndex) {
+		if ((int) afterToBeforeTTable.size() >= stmtAfter) {
+			return afterToBeforeTTable.at(stmtAfter);
+		} else {
+			cout << "\nwarning: unable to find " << stmtAfter << " in afterToBeforeTTable.\n";
+			return GetFollowsTBefore(stmtAfter);
+		}
+	}
+
+	vector<int> emptyList;
+	return emptyList;
 }
 
 vector<int> Follows::GetFollowsTAfter(int stmtBefore) {
@@ -103,6 +135,67 @@ vector<int> Follows::GetFollowsTAfter(int stmtBefore) {
 	return afterList;
 }
 
+vector<int> Follows::GetStoredFollowsTAfter(int stmtBefore) {
+	int maxStmtIndex = StmtTypeTable::GetMaxStmtIndex();
+
+	if (stmtBefore >= 0 && stmtBefore <= maxStmtIndex) {
+		if ((int) beforeToAfterTTable.size() >= stmtBefore) {
+			return beforeToAfterTTable.at(stmtBefore);
+		} else {
+			cout << "\nwarning: unable to find " << stmtBefore << " in beforeToAfterTTable.\n";
+			return GetFollowsTAfter(stmtBefore);
+		}
+	}
+
+	vector<int> emptyList;
+	return emptyList;
+}
+
+void Follows::CreateBeforeToAfterTBV() {
+	int totalNoOfStmts = StmtTypeTable::GetMaxStmtIndex();
+	vector<bool> emptyRow(totalNoOfStmts + 1, false);
+	beforeToAfterTBV = vector<vector<bool>>(totalNoOfStmts + 1, emptyRow);
+
+	vector<int> allStmts = StmtTypeTable::GetAllStmtsOfType(STMT);
+	vector<int> afterT;
+	for (vector<int>::iterator it1 = allStmts.begin(); it1 != allStmts.end(); it1++) {
+		afterT = GetFollowsTAfter(*it1);
+
+		for (vector<int>::iterator it2 = afterT.begin(); it2 != afterT.end(); it2++) {
+			beforeToAfterTBV.at(*it1).at(*it2) = true;
+		}
+	}
+
+}
+
+void Follows::CreateBeforeToAfterTTable() {
+	int maxStmtIndex = StmtTypeTable::GetMaxStmtIndex();
+	vector<int> emptyRow;
+	beforeToAfterTTable = vector<vector<int>>(maxStmtIndex + 1, emptyRow);
+
+	vector<int> allStmts = StmtTypeTable::GetAllStmtsOfType(STMT);
+	vector<int> afterT;
+	for (vector<int>::iterator it = allStmts.begin(); it != allStmts.end(); it++) {
+		afterT = GetFollowsTAfter(*it);
+		beforeToAfterTTable.at(*it) = afterT;
+	}
+
+}
+
+void Follows::CreateAfterToBeforeTTable() {
+	int maxStmtIndex = StmtTypeTable::GetMaxStmtIndex();
+	vector<int> emptyRow;
+	afterToBeforeTTable = vector<vector<int>>(maxStmtIndex + 1, emptyRow);
+
+	vector<int> allStmts = StmtTypeTable::GetAllStmtsOfType(STMT);
+	vector<int> beforeT;
+	for (vector<int>::iterator it = allStmts.begin(); it != allStmts.end(); it++) {
+		beforeT = GetFollowsTBefore(*it);
+		afterToBeforeTTable.at(*it) = beforeT;
+	}
+
+}
+
 bool Follows::HasAnyFollows() {
 	return SizeOfFollows() > 0;
 }
@@ -114,6 +207,9 @@ int Follows::SizeOfFollows() {
 void Follows::ClearData() {
 	beforeToAfterTable.clear();
 	afterToBeforeTable.clear();
+	beforeToAfterTBV.clear();
+	beforeToAfterTTable.clear();
+	afterToBeforeTTable.clear();
 }
 
 /** private methods **/
