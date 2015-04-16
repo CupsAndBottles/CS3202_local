@@ -90,6 +90,27 @@
     <ClInclude Include="QueryProcessor\IntermediateResult.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PKB\AffectsBip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PKB\Affects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PKB\Contains.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pkb\nextbip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pkb\nodetypetable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PKB\Sibling.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser\ParserTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Parser\Parser.cpp">
@@ -159,6 +180,27 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QueryProcessor\IntermediateResult.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PKB\Affects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PKB\AffectsBip.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PKB\Contains.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PKB\NextBip.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PKB\NodeTypeTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PKB\Sibling.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser\ParserTester.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

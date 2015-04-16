@@ -16,15 +16,22 @@ std::list<std::string> QueryProcessor::ProcessQuery(std::string query) {
 	QueryPreProcessor QV;
 
 	queryData.ClearData();
-	//std::cout << "\nHERE\n";
+
 	if(QV.ValidateQuery(query, queryData)) {
 		//std::cout << "\nInside validate Query.\n";
-		QE.EvaluateQuery(queryData, result);
+		if(QE.EvaluateQuery(queryData, result)) 
+			std::cout << "After evaluation, valid.\n";
+		else 
+			std::cout << "After evaluation, invalid.\n";
 		//std::cout << "\nafter evaluate Query.\n";
+
+		cout<< "\nFinal result list: ";
+		for(list<string>::iterator it = result.begin(); it != result.end(); ++it)
+			cout << *it << " ";
+		cout<< "\n";
+
 		return result;
 	}
-	
-	//std::cout << "\nLOL Invalid Query.\n";
 
 	return result;
 }

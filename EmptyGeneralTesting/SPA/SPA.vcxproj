@@ -12,6 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Parser\DesignExtractor.h" />
+    <ClInclude Include="Parser\ParserTester.h" />
+    <ClInclude Include="PKB\Affects.h" />
+    <ClInclude Include="PKB\AffectsBip.h" />
+    <ClInclude Include="PKB\Contains.h" />
     <ClInclude Include="PKB\Next.h" />
     <ClInclude Include="PKB\Calls.h" />
     <ClInclude Include="Exception\IndexNotFoundException.h" />
@@ -21,8 +25,11 @@
     <ClInclude Include="PKB\ConstTable.h" />
     <ClInclude Include="PKB\Follows.h" />
     <ClInclude Include="PKB\Modifies.h" />
+    <ClInclude Include="pkb\nextbip.h" />
+    <ClInclude Include="pkb\nodetypetable.h" />
     <ClInclude Include="PKB\Parent.h" />
     <ClInclude Include="PKB\ProcTable.h" />
+    <ClInclude Include="PKB\Sibling.h" />
     <ClInclude Include="PKB\StmtTypeTable.h" />
     <ClInclude Include="PKB\Uses.h" />
     <ClInclude Include="PKB\VarTable.h" />
@@ -39,6 +46,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Parser\DesignExtractor.cpp" />
+    <ClCompile Include="Parser\ParserTester.cpp" />
+    <ClCompile Include="PKB\Affects.cpp" />
+    <ClCompile Include="PKB\AffectsBip.cpp" />
+    <ClCompile Include="PKB\Contains.cpp" />
     <ClCompile Include="PKB\Next.cpp" />
     <ClCompile Include="PKB\Calls.cpp" />
     <ClCompile Include="Parser\Parser.cpp" />
@@ -47,8 +58,11 @@
     <ClCompile Include="PKB\ConstTable.cpp" />
     <ClCompile Include="PKB\Follows.cpp" />
     <ClCompile Include="PKB\Modifies.cpp" />
+    <ClCompile Include="PKB\NextBip.cpp" />
+    <ClCompile Include="PKB\NodeTypeTable.cpp" />
     <ClCompile Include="PKB\Parent.cpp" />
     <ClCompile Include="PKB\ProcTable.cpp" />
+    <ClCompile Include="PKB\Sibling.cpp" />
     <ClCompile Include="PKB\StmtTypeTable.cpp" />
     <ClCompile Include="PKB\Uses.cpp" />
     <ClCompile Include="PKB\VarTable.cpp" />

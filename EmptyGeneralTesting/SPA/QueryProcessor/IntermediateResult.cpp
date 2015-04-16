@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <sstream>   
+#include <iterator> 
 
 using namespace std;
 
@@ -112,11 +113,39 @@ bool IntermediateResult::Exist(string synonym , string value)
 	return false;
 }
 
+void IntermediateResult::MakeLink(string synonym_1, int value_1_int, string synonym_2, int value_2_int)
+{
+	if(synonym_1 == synonym_2)	return;
+
+	string value_1 = ITOS(value_1_int);
+	string value_2 = ITOS(value_2_int);
+	MakeLink(synonym_1 , value_1, synonym_2 , value_2);
+}
+
+void IntermediateResult::MakeLink(string synonym_1 , int value_1_int, string synonym_2 , string value_2)
+{
+	if(synonym_1 == synonym_2)	return;
+
+	string value_1 = ITOS(value_1_int);
+	MakeLink(synonym_1 , value_1, synonym_2 , value_2);
+}
+
+
+void IntermediateResult::MakeLink(string synonym_1 , string value_1, string synonym_2 , int value_2_int)
+{
+	if(synonym_1 == synonym_2)	return;
+
+	string value_2 = ITOS(value_2_int);
+	MakeLink(synonym_1 , value_1, synonym_2 , value_2);
+}
+
 void IntermediateResult::MakeLink(string synonym_1, string value_1, string synonym_2, string value_2)
 {
 	//find value1, find synonym2 in element, if not exist, create
 	//push value2 to the correct link
-	//repeat for value2
+	//repeat for value
+
+	if(synonym_1 == synonym_2)	return;
 
 	for(it_synonymList it = synonymList.begin(); it != synonymList.end(); ++it)
 	{
@@ -195,6 +224,335 @@ void IntermediateResult::MakeLink(string synonym_1, string value_1, string synon
 }
 
 
+
+bool IntermediateResult::Unlink(string synonym_1, int value_1_int, string synonym_2, int value_2_int , string skipSynonym)
+{
+	if(synonym_1 == synonym_2)	return false;
+
+	string value_1 = ITOS(value_1_int);
+	string value_2 = ITOS(value_2_int);
+	return Unlink(synonym_1 , value_1, synonym_2 , value_2);
+}
+
+bool IntermediateResult::Unlink(string synonym_1 , int value_1_int, string synonym_2 , string value_2 , string skipSynonym)
+{
+	if(synonym_1 == synonym_2)	return false;
+
+	string value_1 = ITOS(value_1_int);
+	return Unlink(synonym_1 , value_1, synonym_2 , value_2);
+}
+
+bool IntermediateResult::Unlink(string synonym_1 , string value_1, string synonym_2 , int value_2_int , string skipSynonym)
+{
+	if(synonym_1 == synonym_2)	return false;
+
+	string value_2 = ITOS(value_2_int);
+	return Unlink(synonym_1 , value_1, synonym_2 , value_2);
+}
+
+//Unlink need to check whether its direct or indirect link
+//if direct, just unlink,
+//if indirect, go through the nodes and reach the destination, then unlink backward
+//from a - v - w - p , then start unlink (w,p), then (v,w), (a,v)
+
+
+bool IntermediateResult::Unlink(string synonym_1, string value_1, string synonym_2, string value_2 , string skipSynonym)
+{
+	//find value1, find synonym2 in element, find value2, if exist, remove
+	//repeat for value2
+
+	if(synonym_1 == synonym_2)	return false;
+
+	for(it_synonymList it = synonymList.begin(); it != synonymList.end(); ++it)
+	{
+		//synonym_1 matched
+		if(it->first == synonym_1)
+		{
+			for(vector<Element>::iterator it_elements = it->second.begin(); it_elements != it->second.end(); ++it_elements)
+			{
+				//value_1 matched
+				if(it_elements->value == value_1)
+				{
+					links_iterator it_synonym2_found = it_elements->links.find(synonym_2);
+
+					//synonym_2 matched
+					if(it_synonym2_found != it_elements->links.end())
+					{
+						std::vector<string>::iterator it_value2_found = find(it_synonym2_found->second.begin() , it_synonym2_found->second.end() , value_2);
+
+						//value_2 matched
+						if(it_value2_found != it_synonym2_found->second.end())
+						{
+							it_synonym2_found->second.erase(it_value2_found);
+
+							if(it_synonym2_found->second.empty())
+								it_elements->links.erase(synonym_2);
+
+							//confirmed exist, so just go straight to value2 to unlink value1
+							int index_2 = GetElementIndex(synonym_2 , value_2);
+							vector<string> *linksOfValue2ToSynonym1 = &synonymList[synonym_2][index_2].links[synonym_1];
+							vector<string>::iterator it_value1_found = find(linksOfValue2ToSynonym1->begin() , linksOfValue2ToSynonym1->end() , value_1);
+
+							if(it_value1_found != linksOfValue2ToSynonym1->end())
+							{
+								cout << "found!\n";
+								synonymList[synonym_2][index_2].links[synonym_1].erase(it_value1_found);
+
+								//if links of synonym_2 empty after erase, remove the synonym_2 form link
+
+								if(synonymList[synonym_2][index_2].links[synonym_1].empty())
+									synonymList[synonym_2][index_2].links.erase(synonym_1);
+
+								cout << "After found\n";
+								return true;
+							}
+
+							else return false;				
+						}
+
+						//value_2 not found
+						else
+						{
+							return false;
+						}
+					}
+
+					//synonym_2 not found
+					else
+					{
+						//for each link synonym, for each element, call HasLink(dont check current Synonym)
+						//if it return true, set isdirectlink to false
+						//return true
+						//cout << "before\n";
+						//cout << "size: " << it_elements->links.size() << "\n";
+						std::map<string,vector<string>> localCopy2 = it_elements->links;
+						for(links_iterator it_links = localCopy2.begin(); it_links != localCopy2.end(); ++ it_links)
+						{
+							//cout << "here \n";
+							if(it_links->first != skipSynonym)
+							{
+								//vector<string>::iterator it_link_value = it_links->second.end();
+								//--it_link_value;
+								std::vector<string> localCopy = it_links->second;
+								// << "size: " << localCopy.size() << "\n";
+
+
+								vector<string>::reverse_iterator it_link_value = localCopy.rbegin();
+								for (; it_link_value!= localCopy.rend(); ++it_link_value)
+								{
+									//cout << "here2\n";
+									string skipSynonym = synonym_1;
+
+									//cout << "unlinking " << it_links->first << " " << *it_link_value << " " << synonym_2 << " " << value_2;
+									//cout << " , skipping " << skipSynonym << "\n";
+								
+									if(Unlink(it_links->first , *it_link_value , synonym_2, value_2, skipSynonym))
+									{
+										//cout << "unlinking successful\n";
+										//cout << "now unlinking " << synonym_1 << " " << value_1 << " " << it_links->first << " " << *it_link_value << "\n";
+										//if true means there is a link and they have been unlinked, so unlink the current 2 value
+										Unlink(synonym_1, value_1 , it_links->first , *it_link_value);
+									
+									}
+								}
+								//cout << "end\n";
+							}
+						}
+		
+						return false;
+					}
+				}
+			}
+		}
+	}
+}
+	
+
+
+bool IntermediateResult::HasLinkBetweenColumns(string synonym_1, int value_1_int, string synonym_2, int value_2_int, bool& isDirectLink , string skipSynonym)
+{
+	if(synonym_1 == synonym_2)	return false;
+
+	string value_1 = ITOS(value_1_int);
+	string value_2 = ITOS(value_2_int);
+	return HasLinkBetweenColumns(synonym_1 , value_1, synonym_2 , value_2 , isDirectLink , skipSynonym);
+}
+
+bool IntermediateResult::HasLinkBetweenColumns(string synonym_1 , int value_1_int, string synonym_2 , string value_2, bool& isDirectLink , string skipSynonym)
+{
+	if(synonym_1 == synonym_2)	return false;
+
+	string value_1 = ITOS(value_1_int);
+	return HasLinkBetweenColumns(synonym_1 , value_1, synonym_2 , value_2 , isDirectLink , skipSynonym);
+}
+
+bool IntermediateResult::HasLinkBetweenColumns(string synonym_1 , string value_1, string synonym_2 , int value_2_int, bool& isDirectLink , string skipSynonym)
+{
+	if(synonym_1 == synonym_2)	return false;
+
+	string value_2 = ITOS(value_2_int);
+	return HasLinkBetweenColumns(synonym_1 , value_1, synonym_2 , value_2 , isDirectLink , skipSynonym);
+}
+
+bool IntermediateResult::HasLinkBetweenColumns(string synonym_1, string value_1, string synonym_2, string value_2, bool& isDirectLink , string skipSynonym)
+{
+	//find value1, find synonym2 in element, if doesnt exist return false
+	//find value2 in synonym2, if doesnt exist return false
+	//no need repeat 
+
+	if(synonym_1 == synonym_2)	return false;
+
+	for(it_synonymList it = synonymList.begin(); it != synonymList.end(); ++it)
+	{
+		//synonym_1 matched
+		if(it->first == synonym_1)
+		{
+			for(vector<Element>::iterator it_elements = it->second.begin(); it_elements != it->second.end(); ++it_elements)
+			{
+				//value_1 matched
+				if(it_elements->value == value_1)
+				{
+					links_iterator it_synonym2_found = it_elements->links.find(synonym_2);
+
+					//synonym_2 found
+					if(it_synonym2_found != it_elements->links.end())
+					{
+						std::vector<string>::iterator it_value2_found = find(it_synonym2_found->second.begin() , it_synonym2_found->second.end() , value_2);
+
+						//value_2 found
+						if(it_value2_found != it_synonym2_found->second.end())
+						{
+							isDirectLink = true;
+							return true;
+						}
+
+						//value_2 doesnt exist
+						else
+						{
+							return false;
+						}
+					}
+
+					//synonym_2 doesnt exist
+					else
+					{
+						//for each link synonym, for each element, call HasLink(dont check current Synonym)
+						//if it return true, set isdirectlink to false
+						//return true
+						bool dummy;
+						for(links_iterator it_links = it_elements->links.begin(); it_links != it_elements->links.end(); ++ it_links)
+						{
+							if(it_links->first != skipSynonym)
+							{
+								for(vector<string>::iterator it_link_value = it_links->second.begin(); it_link_value != it_links->second.end(); ++it_link_value)
+								{
+									string skipSynonym = synonym_1;
+
+									cout << "checking haslink " << it_links->first << " " << *it_link_value << " " << synonym_2 << " " << value_2;
+									cout << " , skipping " << skipSynonym << "\n";
+								
+									if(HasLinkBetweenColumns(it_links->first , *it_link_value , synonym_2, value_2 , dummy , skipSynonym))
+									{
+										isDirectLink = false;
+										return true;
+									}
+								}
+							}
+						}
+		
+						return false;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+
+
+bool IntermediateResult::HasLinkToColumn(string synonym_1, int value_1_int, string synonym_2)
+{
+	if(synonym_1 == synonym_2)	return false;
+
+	string value_1 = ITOS(value_1_int);
+	return HasLinkToColumn(synonym_1 , value_1, synonym_2);
+}
+
+bool IntermediateResult::HasLinkToColumn(string synonym_1, string value_1, string synonym_2)
+{
+	//find value1, find synonym2 in element, if doesnt exist return false, no need find value2
+	//no need repeat 
+
+	if(synonym_1 == synonym_2)	return false;
+
+	for(it_synonymList it = synonymList.begin(); it != synonymList.end(); ++it)
+	{
+		//synonym_1 matched
+		if(it->first == synonym_1)
+		{
+			for(vector<Element>::iterator it_elements = it->second.begin(); it_elements != it->second.end(); ++it_elements)
+			{
+				//value_1 matched
+				if(it_elements->value == value_1)
+				{
+					links_iterator it_synonym2_found = it_elements->links.find(synonym_2);
+
+					//synonym_2 found
+					if(it_synonym2_found != it_elements->links.end())
+					{
+						return true;
+					}
+
+					//synonym_2 doesnt exist
+					else
+					{
+						return false;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+
+
+bool IntermediateResult::HasLink(string synonym_1, int value_1_int)
+{
+	string value_1 = ITOS(value_1_int);
+	return HasLink(synonym_1 , value_1);
+}
+
+bool IntermediateResult::HasLink(string synonym_1, string value_1)
+{
+	for(it_synonymList it = synonymList.begin(); it != synonymList.end(); ++it)
+	{
+		//synonym_1 matched
+		if(it->first == synonym_1)
+		{
+			for(vector<Element>::iterator it_elements = it->second.begin(); it_elements != it->second.end(); ++it_elements)
+			{
+				//value_1 matched
+				if(it_elements->value == value_1)
+				{
+					if(it_elements->links.empty())
+						return false;
+
+					else return true;
+				}
+			}
+		}
+	}
+
+	return false;
+
+}
+
+
+
 void IntermediateResult::Remove(string synonym , string value)
 {
 	//if value has no link to anything, just remove it
@@ -209,6 +567,11 @@ void IntermediateResult::Remove(string synonym , string value)
 	vector<string> linkBackColumns;	//to check which column need to link back to 
 
 	//must check value is in synonym or not, if not just return , output some message !!!!!!!!!!!
+	if(!Exist(synonym , value))
+	{
+		cout << value << " does not exist in synonym " << synonym << ", cannot be removed\n";
+		return;
+	}
 
 	links_map links = GetLinks(synonym , value);
 	if(links.empty())
@@ -327,6 +690,16 @@ void IntermediateResult::Remove(string synonym , int value_int)
 	string value = ITOS(value_int);
 	Remove(synonym , value);
 }
+
+
+
+void IntermediateResult::RemoveElementsWithoutLink(string synonym_1, string synonym_2)
+{
+	//for each synonym column
+	//get its list, for each value
+
+}
+
 
 links_map IntermediateResult::GetLinks(string synonym, string value)
 {
@@ -489,6 +862,23 @@ SynonymType IntermediateResult::GetSynonymType(std::string val)
 
 	return INVALID_SYNONYM_TYPE;
 }
+
+void IntermediateResult::GetResultSingle(string synonym , list<string>& result)
+{
+	vector<string> result_vec;
+	GetList(synonym , result_vec);
+	
+	copy( result_vec.begin(), result_vec.end(), back_inserter( result ) );
+}
+
+
+void IntermediateResult::GetResultTuple(vector<string> synonym , list<string>& result)
+{
+	//
+
+}
+
+
 
 
 
